@@ -33,10 +33,12 @@ describe('CinematicStage', () => {
     render(<CinematicStage />);
 
     const landingPrelude = screen.getByLabelText('Arrival introduction');
-    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing');
+    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing', 'scene-prelude--center');
     expect(screen.getByText('Certain worlds do not present themselves.')).toBeInTheDocument();
     expect(screen.getByText('They are discovered in silence.')).toBeInTheDocument();
-    expect(screen.getByText('Scroll to enter')).toBeInTheDocument();
+    const landingScrollHint = screen.getByText('Scroll to enter');
+    expect(landingScrollHint).toBeInTheDocument();
+    expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing');
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
     expect(screen.getByText('Certain worlds do not present themselves.')).toHaveClass('scene-italic');
     expect(screen.getByText('They are discovered in silence.')).toHaveClass('scene-italic');

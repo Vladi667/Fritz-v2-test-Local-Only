@@ -231,7 +231,7 @@ export function CinematicStage() {
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
                 {isHero && scene.preludeLines ? (
-                  <div className="scene-prelude scene-prelude--landing" aria-label="Arrival introduction">
+                  <div className="scene-prelude scene-prelude--landing scene-prelude--center" aria-label="Arrival introduction">
                     {scene.preludeLines.map((line) => (
                       <p className="scene-italic" key={line}>
                         {line}
@@ -255,7 +255,9 @@ export function CinematicStage() {
                       {scene.title}
                     </h2>
                   )}
-                  {scene.scrollHint ? <p className="scene-scroll-hint">{scene.scrollHint}</p> : null}
+                  {scene.scrollHint ? (
+                    <p className={`scene-scroll-hint ${isHero ? 'scene-scroll-hint--landing' : ''}`}>{scene.scrollHint}</p>
+                  ) : null}
                   <p className="scene-body">{scene.description}</p>
                   <div className="scene-actions">
                     <a className="button-link button-link--primary" href={scene.href}>
