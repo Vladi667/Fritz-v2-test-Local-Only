@@ -179,18 +179,20 @@ export function CinematicStage() {
           <a className="brandmark" href={`#${firstSceneId}`} aria-label="Go to FRITZ homepage">
             <img className="brandmark__logo" src="/assets/brand/fritz-logo.png" alt="FRITZ" />
           </a>
-          <nav className="site-nav" aria-label="Primary">
-            {navigationItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className="site-nav__link"
-                data-active={activeSceneId === item.id}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <div className="site-nav-shell">
+            <nav className="site-nav" aria-label="Primary">
+              {navigationItems.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className="site-nav__link"
+                  data-active={activeSceneId === item.id}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
         </div>
       </header>
 
@@ -242,17 +244,18 @@ export function CinematicStage() {
         {scenes.map((scene, index) => {
           const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
           const quoteAlign = getOppositeAlign(scene.align);
+          const isLandingScene = index === 0;
 
           return (
             <section
               key={scene.id}
               id={scene.id}
               ref={registerScene(scene.id)}
-              className={`scene scene--${scene.align} scene--chapter ${isVisible ? 'is-visible' : ''}`}
+              className={`scene scene--${scene.align} scene--chapter ${isLandingScene ? 'scene--landing' : ''} ${isVisible ? 'is-visible' : ''}`}
               data-active={activeSceneId === scene.id}
               aria-labelledby={`${scene.id}-title`}
             >
-              {index === 0 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
+              {isLandingScene ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
                 {scene.italicLine ? (
                   <div className={`scene-quote scene-quote--${quoteAlign} scene-quote--center`}>

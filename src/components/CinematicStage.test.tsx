@@ -78,6 +78,9 @@ describe('CinematicStage', () => {
     expect(within(nav).getByText('Website Creation')).toBeInTheDocument();
     expect(within(nav).getByText('TBA')).toBeInTheDocument();
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
+
+    const websiteSection = screen.getByLabelText('Website Creation');
+    expect(websiteSection).toHaveClass('scene--landing', 'is-visible');
   });
 
   it('hands off from the loading intro to the homepage after the cinematic hold', () => {
