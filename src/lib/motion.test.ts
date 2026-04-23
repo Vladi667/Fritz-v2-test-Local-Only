@@ -27,8 +27,9 @@ describe('motion helpers', () => {
   });
 
   it('finds the active category beat for a progress value', () => {
-    expect(getActiveBeat(0.12, categories)?.id).toBe('arrival');
-    expect(getActiveBeat(0.84, categories)?.id).toBe('drift');
+    expect(getActiveBeat(0.3, categories)?.id).toBe('website-creation');
+    expect(getActiveBeat(0.55, categories)?.id).toBe('brand-design');
+    expect(getActiveBeat(0.8, categories)?.id).toBe('business-scaling');
     expect(getActiveBeat(1, categories)).toBeNull();
   });
 

@@ -1,49 +1,234 @@
-import {useMemo, useRef} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {categories} from '../data/categories';
 import {useImageSequence} from '../hooks/useImageSequence';
 import {useReducedMotion} from '../hooks/useReducedMotion';
 import {useScrollProgress} from '../hooks/useScrollProgress';
-import {getActiveBeat, quantizeProgress} from '../lib/motion';
-import {CategoryOverlay} from './CategoryOverlay';
+import {quantizeProgress} from '../lib/motion';
 import {SequenceCanvas} from './SequenceCanvas';
 
+type Scene = {
+  id: string;
+  navLabel: string;
+  eyebrow: string;
+  title: string;
+  italicLine?: string;
+  description: string;
+  cta: string;
+  href: string;
+  align: 'start' | 'end';
+  kind: 'hero' | 'chapter';
+};
+
+const joinScene: Scene = {
+  id: 'join-the-adventure',
+  navLabel: 'Join the Adventure',
+  eyebrow: 'Join the Adventure',
+  title: 'Join the Adventure',
+  italicLine: 'Some brands ask for visibility. Others build a world people want to enter.',
+  description:
+    'FRITZ brings together UX/UI, cinematic direction, Superpower, and Remotion to shape digital experiences that feel less like marketing and more like gravity.',
+  cta: 'Join the Adventure',
+  href: '#arrival',
+  align: 'end',
+  kind: 'chapter',
+};
+
 export function CinematicStage() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const progress = useScrollProgress(sectionRef);
+  const storyRef = useRef<HTMLDivElement>(null);
+  const sceneRefs = useRef<Record<string, HTMLElement | null>>({});
+  const progress = useScrollProgress(storyRef);
   const prefersReducedMotion = useReducedMotion();
   const normalizedProgress = prefersReducedMotion ? quantizeProgress(progress) : progress;
   const {images, isReady} = useImageSequence();
 
-  const activeBeat = useMemo(() => getActiveBeat(normalizedProgress, categories), [normalizedProgress]);
-  const introVisible = normalizedProgress < 0.12;
-  const endingVisible = normalizedProgress > 0.95;
+  const scenes = useMemo<Scene[]>(
+    () => [
+      {
+        id: 'arrival',
+        navLabel: 'Arrival',
+        eyebrow: 'FRITZ',
+        title: 'Brands built with quiet power.',
+        description:
+          'FRITZ creates digital experiences, brand worlds, and growth systems for businesses that want to look sharper, feel rarer, and scale with control.',
+        cta: 'Enter FRITZ',
+        href: '#website-creation',
+        align: 'start',
+        kind: 'hero',
+      },
+      ...categories.map((category) => ({
+        id: category.id,
+        navLabel: category.navLabel,
+        eyebrow: category.eyebrow,
+        title: category.label,
+        italicLine: category.italicLine,
+        description: category.description,
+        cta: category.cta,
+        href: `#${category.id}`,
+        align: category.align,
+        kind: 'chapter' as const,
+      })),
+      joinScene,
+    ],
+    [],
+  );
+
+  const navigationItems = useMemo(
+    () => scenes.map(({id, navLabel}) => ({id, label: navLabel})),
+    [scenes],
+  );
+
+  const [revealedScenes, setRevealedScenes] = useState<Record<string, boolean>>({arrival: true});
+  const [activeSceneId, setActiveSceneId] = useState<string>('arrival');
+
+  useEffect(() => {
+    const nodes = scenes
+      .map((scene) => sceneRefs.current[scene.id])
+      .filter((node): node is HTMLElement => node instanceof HTMLElement);
+
+    if (nodes.length === 0) {
+      return;
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        setRevealedScenes((current) => {
+          let changed = false;
+          const next = {...current};
+
+          for (const entry of entries) {
+            const id = entry.target.id;
+            if (entry.isIntersecting && !next[id]) {
+              next[id] = true;
+              changed = true;
+            }
+          }
+
+          return changed ? next : current;
+        });
+      },
+      {
+        threshold: 0.22,
+        rootMargin: '0px 0px -12% 0px',
+      },
+    );
+
+    const activeObserver = new IntersectionObserver(
+      (entries) => {
+        const activeEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio);
+
+        if (activeEntries.length === 0) {
+          return;
+        }
+
+        const nextActiveScene = activeEntries[0].target.id;
+        setActiveSceneId((current) => (current === nextActiveScene ? current : nextActiveScene));
+      },
+      {
+        threshold: [0.2, 0.4, 0.6, 0.8],
+        rootMargin: '-18% 0px -18% 0px',
+      },
+    );
+
+    for (const node of nodes) {
+      revealObserver.observe(node);
+      activeObserver.observe(node);
+    }
+
+    return () => {
+      revealObserver.disconnect();
+      activeObserver.disconnect();
+    };
+  }, [scenes]);
+
+  const registerScene = (id: string) => (node: HTMLElement | null) => {
+    sceneRefs.current[id] = node;
+  };
 
   return (
-    <section className="sequence-section" ref={sectionRef}>
-      <div className="sequence-sticky">
-        <SequenceCanvas images={images} progress={normalizedProgress} ready={isReady} />
-        <div className={`title-overlay ${introVisible ? 'is-visible' : ''}`}>
-          <p className="overlay-kicker">Fritz v2</p>
-          <h1>Full sequence. Full presence.</h1>
-          <p className="overlay-copy">A complete motion study built around the new personage.</p>
+    <div className="fritz-home">
+      <header className="site-header">
+        <div className="site-header__inner">
+          <a className="brandmark" href="#arrival" aria-label="Go to FRITZ arrival">
+            FRITZ
+          </a>
+          <nav className="site-nav" aria-label="Primary">
+            {navigationItems.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="site-nav__link"
+                data-active={activeSceneId === item.id}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
         </div>
-        <div className="overlay-grid">
-          {categories.map((beat) => (
-            <CategoryOverlay key={beat.id} beat={beat} active={activeBeat?.id === beat.id} />
-          ))}
+      </header>
+
+      <div className="story-viewport" ref={storyRef}>
+        <div className="story-stage" aria-hidden="true">
+          <SequenceCanvas
+            images={images}
+            progress={normalizedProgress}
+            ready={isReady}
+            subjectScale={0.76}
+          />
+          <div className="story-stage__vignette" />
+          <div className="story-stage__shadow" />
         </div>
-        <div className={`end-overlay ${endingVisible ? 'is-visible' : ''}`}>
-          <p className="overlay-kicker">Last beat</p>
-          <h2>The final frame lets the sequence settle.</h2>
-        </div>
-        <div className="scroll-prompt" aria-hidden="true">
-          <span />
-          <p>Scroll through the sequence</p>
-        </div>
-        <div className="sequence-progress" aria-hidden="true">
-          <span style={{transform: `scaleX(${normalizedProgress || 0.001})`}} />
-        </div>
+
+        {scenes.map((scene, index) => {
+          const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
+          const isHero = scene.kind === 'hero';
+          const secondaryHref = isHero ? '#paths' : '#join-the-adventure';
+          const secondaryLabel = isHero ? 'Explore the paths' : undefined;
+
+          return (
+            <section
+              key={scene.id}
+              id={scene.id}
+              ref={registerScene(scene.id)}
+              className={`scene scene--${scene.align} scene--${scene.kind} ${isVisible ? 'is-visible' : ''}`}
+              aria-labelledby={`${scene.id}-title`}
+            >
+              {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
+              <div className="scene-grid">
+                <div className={`scene-copy scene-copy--${scene.align}`}>
+                  <p className="scene-eyebrow">{scene.eyebrow}</p>
+                  {isHero ? (
+                    <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
+                      {scene.title}
+                    </h1>
+                  ) : (
+                    <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
+                      {scene.title}
+                    </h2>
+                  )}
+                  {scene.italicLine ? <p className="scene-italic">{scene.italicLine}</p> : null}
+                  <p className="scene-body">{scene.description}</p>
+                  <div className="scene-actions">
+                    <a className="button-link button-link--primary" href={scene.href}>
+                      {scene.cta}
+                    </a>
+                    {secondaryLabel ? (
+                      <a className="button-link button-link--secondary" href={secondaryHref}>
+                        {secondaryLabel}
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })}
       </div>
-    </section>
+
+      <footer className="site-footer">
+        <p>Built with restraint. Designed for impact.</p>
+      </footer>
+    </div>
   );
 }

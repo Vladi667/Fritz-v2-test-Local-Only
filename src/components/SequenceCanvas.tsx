@@ -5,6 +5,7 @@ type SequenceCanvasProps = {
   images: HTMLImageElement[];
   progress: number;
   ready: boolean;
+  subjectScale?: number;
 };
 
 function paintWatermarkCleanup(
@@ -44,7 +45,7 @@ function paintWatermarkCleanup(
   context.restore();
 }
 
-export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
+export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: SequenceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameIndex = useMemo(() => getFrameIndex(progress, images.length), [images.length, progress]);
 
@@ -70,7 +71,7 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     context.clearRect(0, 0, width, height);
 
     context.save();
-    context.fillStyle = '#05070b';
+    context.fillStyle = '#05070a';
     context.fillRect(0, 0, width, height);
     context.restore();
 
@@ -79,7 +80,7 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
       image.naturalHeight,
       width,
       height,
-      0.7,
+      subjectScale,
     );
 
     // Outside-only blur halo that helps the rectangular frame melt into the page background.
@@ -104,7 +105,7 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
     paintWatermarkCleanup(context, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
-  }, [frameIndex, images]);
+  }, [frameIndex, images, subjectScale]);
 
   return (
     <div className={`sequence-canvas-shell ${ready ? 'is-ready' : ''}`}>
