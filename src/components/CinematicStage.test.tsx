@@ -59,12 +59,12 @@ describe('CinematicStage', () => {
     expect(within(loadingIntro).getByText('Certain worlds do not present themselves.')).toHaveClass(
       'scene-italic',
       'loading-intro__line',
-      'loading-intro__line--left',
+      'loading-intro__line--first',
     );
     expect(within(loadingIntro).getByText('They are discovered in silence.')).toHaveClass(
       'scene-italic',
       'loading-intro__line',
-      'loading-intro__line--right',
+      'loading-intro__line--second',
     );
     expect(within(loadingIntro).getByText('Scroll to enter')).toHaveClass(
       'scene-scroll-hint',
@@ -102,9 +102,15 @@ describe('CinematicStage', () => {
     const websiteQuote = within(websiteSection).getByText(
       'A website should not just present a business. It should elevate it.',
     );
-    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end', 'scene-quote--center');
+    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--start', 'scene-quote--center');
 
     const tbaSection = screen.getByLabelText('TBA');
     expect(within(tbaSection).getAllByText('TBA').length).toBeGreaterThanOrEqual(4);
+
+    const joinSection = screen.getByLabelText('Join the Adventure');
+    const joinQuote = within(joinSection).getByText(
+      'Some brands ask for visibility. Others build a world people want to enter.',
+    );
+    expect(joinQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end', 'scene-quote--center');
   });
 });

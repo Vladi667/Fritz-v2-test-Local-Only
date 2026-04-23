@@ -33,7 +33,7 @@ const joinScene: Scene = {
     'FRITZ brings together UX/UI, cinematic direction, Superpower, and Remotion to shape digital experiences that feel less like marketing and more like gravity.',
   cta: 'Join the Adventure',
   href: '#website-creation',
-  align: 'end',
+  align: 'start',
 };
 
 type IntroPhase = 'visible' | 'fading' | 'done';
@@ -200,8 +200,10 @@ export function CinematicStage() {
           aria-label="Loading introduction"
         >
           <div className="loading-intro__inner">
-            <p className="scene-italic loading-intro__line loading-intro__line--left">{INTRO_LINES[0]}</p>
-            <p className="scene-italic loading-intro__line loading-intro__line--right">{INTRO_LINES[1]}</p>
+            <div className="loading-intro__sequence" aria-hidden="true">
+              <p className="scene-italic loading-intro__line loading-intro__line--first">{INTRO_LINES[0]}</p>
+              <p className="scene-italic loading-intro__line loading-intro__line--second">{INTRO_LINES[1]}</p>
+            </div>
             <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact loading-intro__hint">
               {INTRO_SCROLL_HINT}
             </p>
