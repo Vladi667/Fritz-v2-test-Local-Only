@@ -79,8 +79,8 @@ describe('CinematicStage', () => {
     expect(within(nav).getByText('TBA')).toBeInTheDocument();
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
 
-    const websiteSection = screen.getByLabelText('Website Creation');
-    expect(websiteSection).toHaveClass('scene--landing', 'is-visible');
+    const heroSection = screen.getByRole('heading', {name: /brands built with quiet power\./i}).closest('section');
+    expect(heroSection).toHaveClass('scene--landing', 'is-visible', 'scene--hero');
   });
 
   it('hands off from the loading intro to the homepage after the cinematic hold', () => {
@@ -91,12 +91,12 @@ describe('CinematicStage', () => {
     });
 
     expect(screen.queryByLabelText('Loading introduction')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Website Creation')).toBeInTheDocument();
     expect(screen.getByText('FRITZ')).toBeInTheDocument();
     expect(screen.getByText('Brands built with')).toBeInTheDocument();
     expect(screen.getByText('quiet')).toHaveClass('scene-title__quiet');
     expect(screen.getByText('Enter FRITZ')).toBeInTheDocument();
     expect(screen.getByText('Explore the paths')).toBeInTheDocument();
+    expect(screen.getByLabelText('Website Creation')).toBeInTheDocument();
   });
 
   it('renders chapter italic lines on the opposite side and includes the placeholder TBA chapter', () => {

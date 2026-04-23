@@ -51,7 +51,7 @@ const heroScene: Scene = {
   cta: 'Enter FRITZ',
   href: '#join-the-adventure',
   secondaryCta: 'Explore the paths',
-  secondaryHref: '#brand-design',
+  secondaryHref: '#website-creation',
   align: 'start',
   kind: 'hero',
 };
@@ -82,14 +82,8 @@ export function CinematicStage() {
 
   const scenes = useMemo<Scene[]>(
     () => [
-      {
-        ...categories[0],
-        title: categories[0].label,
-        href: `#${categories[0].id}`,
-        kind: 'chapter' as const,
-      },
       heroScene,
-      ...categories.slice(1).map((category) => ({
+      ...categories.map((category) => ({
         id: category.id,
         navLabel: category.navLabel,
         eyebrow: category.eyebrow,
