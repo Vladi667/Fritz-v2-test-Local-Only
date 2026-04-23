@@ -33,7 +33,7 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     context.clearRect(0, 0, width, height);
 
     context.save();
-    context.fillStyle = '#000000';
+    context.fillStyle = '#05070b';
     context.fillRect(0, 0, width, height);
     context.restore();
 
@@ -45,68 +45,26 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
       0.7,
     );
 
-    // Soft blurred integration layer that sits just outside the subject bounds.
+    // Outside-only blur halo that helps the rectangular frame melt into the page background.
     context.save();
-    context.filter = 'blur(26px) brightness(1.02)';
-    context.globalAlpha = 0.42;
-    context.drawImage(image, offsetX - 12, offsetY - 12, drawWidth + 24, drawHeight + 24);
-    const blurBand = 36;
-    const outerMask = context.createLinearGradient(offsetX, 0, offsetX + drawWidth, 0);
-    outerMask.addColorStop(0, 'rgba(255,255,255,0)');
-    outerMask.addColorStop(blurBand / drawWidth, 'rgba(255,255,255,1)');
-    outerMask.addColorStop(1 - blurBand / drawWidth, 'rgba(255,255,255,1)');
-    outerMask.addColorStop(1, 'rgba(255,255,255,0)');
-    context.globalCompositeOperation = 'destination-in';
-    context.fillStyle = outerMask;
-    context.fillRect(offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
-    const outerMaskVertical = context.createLinearGradient(0, offsetY, 0, offsetY + drawHeight);
-    outerMaskVertical.addColorStop(0, 'rgba(255,255,255,0)');
-    outerMaskVertical.addColorStop(blurBand / drawHeight, 'rgba(255,255,255,1)');
-    outerMaskVertical.addColorStop(1 - blurBand / drawHeight, 'rgba(255,255,255,1)');
-    outerMaskVertical.addColorStop(1, 'rgba(255,255,255,0)');
-    context.fillStyle = outerMaskVertical;
-    context.fillRect(offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
+    context.filter = 'blur(32px) brightness(0.92) saturate(0.9)';
+    context.globalAlpha = 0.5;
+    context.drawImage(image, offsetX - 22, offsetY - 22, drawWidth + 44, drawHeight + 44);
+
+    // Cut the center back out so the blur only remains outside the image boundary.
+    context.globalCompositeOperation = 'destination-out';
+    context.fillStyle = '#000';
+    context.fillRect(offsetX + 2, offsetY + 2, drawWidth - 4, drawHeight - 4);
     context.restore();
 
-    // Render the sharp subject through a feathered edge mask so the seam fades slightly inward.
-    const subjectCanvas = document.createElement('canvas');
-    subjectCanvas.width = Math.max(1, Math.round(drawWidth));
-    subjectCanvas.height = Math.max(1, Math.round(drawHeight));
-    const subjectContext = subjectCanvas.getContext('2d');
-
-    if (!subjectContext) {
-      return;
-    }
-
-    subjectContext.imageSmoothingEnabled = true;
-    subjectContext.imageSmoothingQuality = 'high';
-    subjectContext.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
-    subjectContext.drawImage(image, 0, 0, subjectCanvas.width, subjectCanvas.height);
-
-    const feather = 18;
-    subjectContext.globalCompositeOperation = 'destination-in';
-
-    const horizontalMask = subjectContext.createLinearGradient(0, 0, subjectCanvas.width, 0);
-    horizontalMask.addColorStop(0, 'rgba(255,255,255,0)');
-    horizontalMask.addColorStop(feather / subjectCanvas.width, 'rgba(255,255,255,1)');
-    horizontalMask.addColorStop(1 - feather / subjectCanvas.width, 'rgba(255,255,255,1)');
-    horizontalMask.addColorStop(1, 'rgba(255,255,255,0)');
-    subjectContext.fillStyle = horizontalMask;
-    subjectContext.fillRect(0, 0, subjectCanvas.width, subjectCanvas.height);
-
-    const verticalMask = subjectContext.createLinearGradient(0, 0, 0, subjectCanvas.height);
-    verticalMask.addColorStop(0, 'rgba(255,255,255,0)');
-    verticalMask.addColorStop(feather / subjectCanvas.height, 'rgba(255,255,255,1)');
-    verticalMask.addColorStop(1 - feather / subjectCanvas.height, 'rgba(255,255,255,1)');
-    verticalMask.addColorStop(1, 'rgba(255,255,255,0)');
-    subjectContext.fillStyle = verticalMask;
-    subjectContext.fillRect(0, 0, subjectCanvas.width, subjectCanvas.height);
-
     context.save();
-    context.shadowColor = 'rgba(0, 0, 0, 0.22)';
-    context.shadowBlur = 18;
-    context.shadowOffsetY = 6;
-    context.drawImage(subjectCanvas, offsetX, offsetY, drawWidth, drawHeight);
+    context.shadowColor = 'rgba(0, 0, 0, 0.18)';
+    context.shadowBlur = 14;
+    context.shadowOffsetY = 4;
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
+    context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
   }, [frameIndex, images]);
 
