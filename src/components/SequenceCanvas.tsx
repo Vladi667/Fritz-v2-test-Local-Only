@@ -70,11 +70,6 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, width, height);
 
-    context.save();
-    context.fillStyle = '#05070a';
-    context.fillRect(0, 0, width, height);
-    context.restore();
-
     const {drawWidth, drawHeight, offsetX, offsetY} = getContainDrawRect(
       image.naturalWidth,
       image.naturalHeight,

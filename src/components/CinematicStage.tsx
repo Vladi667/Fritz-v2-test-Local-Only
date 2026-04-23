@@ -206,6 +206,19 @@ export function CinematicStage() {
           <div className="story-stage__vignette" />
           <div className="story-stage__shadow" />
         </div>
+        <div className="arrival-overlay arrival-overlay--visible" aria-label="Arrival introduction">
+          <div className="arrival-overlay__inner">
+            <p className="scene-italic scene-prelude__line scene-prelude__line--left">
+              {scenes[0].preludeLines?.[0]}
+            </p>
+            <p className="scene-italic scene-prelude__line scene-prelude__line--right">
+              {scenes[0].preludeLines?.[1]}
+            </p>
+            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact">
+              {scenes[0].scrollHint}
+            </p>
+          </div>
+        </div>
 
         <div
           className="story-progress"
@@ -235,19 +248,6 @@ export function CinematicStage() {
             >
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
-                {isHero && scene.preludeLines ? (
-                  <div className="scene-prelude scene-prelude--landing scene-prelude--split" aria-label="Arrival introduction">
-                    <p className="scene-italic scene-prelude__line scene-prelude__line--left">
-                      {scene.preludeLines[0]}
-                    </p>
-                    <p className="scene-italic scene-prelude__line scene-prelude__line--right">
-                      {scene.preludeLines[1]}
-                    </p>
-                    {scene.scrollHint ? (
-                      <p className="scene-scroll-hint scene-scroll-hint--landing">{scene.scrollHint}</p>
-                    ) : null}
-                  </div>
-                ) : null}
                 {!isHero && scene.italicLine ? (
                   <div className={`scene-quote scene-quote--${quoteAlign} scene-quote--center`}>
                     <p className="scene-italic">{scene.italicLine}</p>

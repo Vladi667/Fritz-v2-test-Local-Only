@@ -231,6 +231,7 @@ button {
 .sequence-canvas-shell {
   z-index: 4;
   opacity: 0;
+  mix-blend-mode: screen;
   transition: opacity 480ms ease;
 }
 
@@ -364,6 +365,27 @@ button {
   z-index: 2;
 }
 
+.arrival-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.arrival-overlay--visible {
+  opacity: 1;
+}
+
+.arrival-overlay__inner {
+  width: var(--content-width);
+  margin: 0 auto;
+  padding: calc(var(--header-height) + 4.6rem) 0 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 2vw, 2rem);
+  row-gap: 0.95rem;
+}
+
 .scene-prelude--split .scene-prelude__line {
   margin: 0;
   max-width: 12ch;
@@ -492,7 +514,15 @@ button {
   justify-self: center;
   width: fit-content;
   margin-top: 0.15rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.scene-scroll-hint--compact {
+  gap: 0.45rem;
+  margin-top: 0;
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .scene-scroll-hint::before {
@@ -500,6 +530,11 @@ button {
   width: 1.8rem;
   height: 1px;
   background: linear-gradient(90deg, rgba(237, 227, 212, 0.32), rgba(237, 227, 212, 0));
+}
+
+.scene-scroll-hint--compact::before {
+  width: 1.15rem;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
 }
 
 .scene-body {
@@ -611,6 +646,10 @@ button {
     grid-column: 8 / span 5;
   }
 
+  .arrival-overlay__inner {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
   .site-nav {
     gap: 0.85rem 1rem;
   }
@@ -656,6 +695,13 @@ button {
   .scene-grid {
     grid-template-columns: 1fr;
     min-height: 100%;
+  }
+
+  .arrival-overlay__inner {
+    width: min(100%, 24rem);
+    padding-top: calc(var(--header-height) + 1.1rem);
+    grid-template-columns: 1fr;
+    row-gap: 0.8rem;
   }
 
   .scene-copy,

@@ -38,13 +38,13 @@ describe('CinematicStage', () => {
       'story-stage__backdrop--veil',
     );
     const landingPrelude = screen.getByLabelText('Arrival introduction');
-    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing', 'scene-prelude--split');
-    const leftLine = screen.getByText('Certain worlds do not present themselves.');
-    const rightLine = screen.getByText('They are discovered in silence.');
+    expect(landingPrelude).toHaveClass('arrival-overlay', 'arrival-overlay--visible');
+    const leftLine = within(landingPrelude).getByText('Certain worlds do not present themselves.');
+    const rightLine = within(landingPrelude).getByText('They are discovered in silence.');
     expect(leftLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--left');
     expect(rightLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--right');
     const landingScrollHint = within(landingPrelude).getByText('Scroll to enter');
-    expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing');
+    expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing', 'scene-scroll-hint--compact');
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
   });
 
