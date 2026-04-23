@@ -15,8 +15,8 @@ export function CinematicStage() {
   const {images, isReady} = useImageSequence();
 
   const activeBeat = useMemo(() => getActiveBeat(normalizedProgress, categories), [normalizedProgress]);
-  const introVisible = normalizedProgress < 0.15;
-  const endingVisible = normalizedProgress > 0.92;
+  const introVisible = normalizedProgress < 0.12;
+  const endingVisible = normalizedProgress > 0.95;
 
   return (
     <section className="sequence-section" ref={sectionRef}>
@@ -24,8 +24,8 @@ export function CinematicStage() {
         <SequenceCanvas images={images} progress={normalizedProgress} ready={isReady} />
         <div className={`title-overlay ${introVisible ? 'is-visible' : ''}`}>
           <p className="overlay-kicker">Fritz v2</p>
-          <h1>One figure. One atmosphere.</h1>
-          <p className="overlay-copy">The image becomes the world. The motion stays precise.</p>
+          <h1>Full sequence. Full presence.</h1>
+          <p className="overlay-copy">A complete motion study built around the new personage.</p>
         </div>
         <div className="overlay-grid">
           {categories.map((beat) => (
@@ -34,7 +34,7 @@ export function CinematicStage() {
         </div>
         <div className={`end-overlay ${endingVisible ? 'is-visible' : ''}`}>
           <p className="overlay-kicker">Last beat</p>
-          <h2>Only the personage remains.</h2>
+          <h2>The final frame lets the sequence settle.</h2>
         </div>
         <div className="scroll-prompt" aria-hidden="true">
           <span />

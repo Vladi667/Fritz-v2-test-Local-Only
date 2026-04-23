@@ -45,7 +45,7 @@ a {
 
 .sequence-section {
   position: relative;
-  height: 560vh;
+  height: 640vh;
 }
 
 .sequence-sticky {
@@ -289,7 +289,7 @@ a {
   }
 
   .sequence-section {
-    height: 520vh;
+    height: 600vh;
   }
 
   .title-overlay h1,

@@ -27,8 +27,8 @@ describe('motion helpers', () => {
   });
 
   it('finds the active category beat for a progress value', () => {
-    expect(getActiveBeat(0.12, categories)?.id).toBe('reach');
-    expect(getActiveBeat(0.84, categories)?.id).toBe('settle');
+    expect(getActiveBeat(0.12, categories)?.id).toBe('arrival');
+    expect(getActiveBeat(0.84, categories)?.id).toBe('drift');
     expect(getActiveBeat(1, categories)).toBeNull();
   });
 
