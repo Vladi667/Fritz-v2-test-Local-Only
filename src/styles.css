@@ -401,11 +401,37 @@ button {
 }
 
 .scene--landing.scene--hero {
+  min-height: 100svh;
+  padding-top: calc(var(--header-height) + 0.35rem);
+  padding-bottom: clamp(2rem, 4vh, 3.5rem);
   align-items: start;
 }
 
+.scene--landing.scene--hero .scene-grid {
+  min-height: calc(100svh - var(--header-height) - clamp(2.35rem, 4.4vh, 4.8rem));
+  align-content: start;
+}
+
 .scene--landing.scene--hero .scene-copy {
-  padding-top: clamp(3.8rem, 8vh, 6.25rem);
+  padding-top: clamp(0.85rem, 2.2vh, 1.65rem);
+  max-width: clamp(20rem, 30vw, 25rem);
+}
+
+.scene--landing.scene--hero .scene-title--hero {
+  max-width: 6.6ch;
+  font-size: clamp(2.4rem, 4.9vw, 4.4rem);
+  line-height: 0.92;
+}
+
+.scene--landing.scene--hero .scene-body {
+  max-width: 29rem;
+  margin-top: 1rem;
+  font-size: clamp(0.92rem, 0.98vw, 1rem);
+  line-height: 1.62;
+}
+
+.scene--landing.scene--hero .scene-actions {
+  margin-top: 1.45rem;
 }
 
 .scene-anchor {
@@ -978,6 +1004,26 @@ button {
 
   .scene--hero .scene-copy {
     padding-top: 0.5rem;
+  }
+
+  .scene--landing.scene--hero .scene-copy {
+    padding-top: 0.25rem;
+    max-width: min(100%, 22.5rem);
+  }
+
+  .scene--landing.scene--hero .scene-title--hero {
+    max-width: 6.2ch;
+    font-size: clamp(2.2rem, 11vw, 3.65rem);
+  }
+
+  .scene--landing.scene--hero .scene-body {
+    margin-top: 0.9rem;
+    font-size: 0.94rem;
+    line-height: 1.58;
+  }
+
+  .scene--landing.scene--hero .scene-actions {
+    margin-top: 1.2rem;
   }
 
   .scene--chapter {
