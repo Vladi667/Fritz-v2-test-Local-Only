@@ -32,16 +32,20 @@ describe('CinematicStage', () => {
   it('shows the poetic arrival copy in italic and the discovery progress indicator', () => {
     render(<CinematicStage />);
 
+    expect(screen.getByTestId('story-stage-backdrop')).toHaveClass('story-stage__backdrop');
+    expect(screen.getByTestId('story-stage-backdrop-veil')).toHaveClass(
+      'story-stage__backdrop',
+      'story-stage__backdrop--veil',
+    );
     const landingPrelude = screen.getByLabelText('Arrival introduction');
-    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing', 'scene-prelude--center');
-    expect(screen.getByText('Certain worlds do not present themselves.')).toBeInTheDocument();
-    expect(screen.getByText('They are discovered in silence.')).toBeInTheDocument();
-    const landingScrollHint = screen.getByText('Scroll to enter');
-    expect(landingScrollHint).toBeInTheDocument();
+    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing', 'scene-prelude--split');
+    const leftLine = screen.getByText('Certain worlds do not present themselves.');
+    const rightLine = screen.getByText('They are discovered in silence.');
+    expect(leftLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--left');
+    expect(rightLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--right');
+    const landingScrollHint = within(landingPrelude).getByText('Scroll to enter');
     expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing');
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
-    expect(screen.getByText('Certain worlds do not present themselves.')).toHaveClass('scene-italic');
-    expect(screen.getByText('They are discovered in silence.')).toHaveClass('scene-italic');
   });
 
   it('treats quiet as a distinct cinematic line in the hero title', () => {

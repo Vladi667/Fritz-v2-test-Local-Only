@@ -192,6 +192,11 @@ export function CinematicStage() {
 
       <div className="story-viewport" ref={storyRef}>
         <div className="story-stage" aria-hidden="true">
+          <div className="story-stage__backdrop" data-testid="story-stage-backdrop" />
+          <div
+            className="story-stage__backdrop story-stage__backdrop--veil"
+            data-testid="story-stage-backdrop-veil"
+          />
           <SequenceCanvas
             images={images}
             progress={normalizedProgress}
@@ -231,12 +236,16 @@ export function CinematicStage() {
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
                 {isHero && scene.preludeLines ? (
-                  <div className="scene-prelude scene-prelude--landing scene-prelude--center" aria-label="Arrival introduction">
-                    {scene.preludeLines.map((line) => (
-                      <p className="scene-italic" key={line}>
-                        {line}
-                      </p>
-                    ))}
+                  <div className="scene-prelude scene-prelude--landing scene-prelude--split" aria-label="Arrival introduction">
+                    <p className="scene-italic scene-prelude__line scene-prelude__line--left">
+                      {scene.preludeLines[0]}
+                    </p>
+                    <p className="scene-italic scene-prelude__line scene-prelude__line--right">
+                      {scene.preludeLines[1]}
+                    </p>
+                    {scene.scrollHint ? (
+                      <p className="scene-scroll-hint scene-scroll-hint--landing">{scene.scrollHint}</p>
+                    ) : null}
                   </div>
                 ) : null}
                 {!isHero && scene.italicLine ? (
@@ -255,7 +264,7 @@ export function CinematicStage() {
                       {scene.title}
                     </h2>
                   )}
-                  {scene.scrollHint ? (
+                  {scene.scrollHint && !isHero ? (
                     <p className={`scene-scroll-hint ${isHero ? 'scene-scroll-hint--landing' : ''}`}>{scene.scrollHint}</p>
                   ) : null}
                   <p className="scene-body">{scene.description}</p>

@@ -174,29 +174,62 @@ button {
 
 .story-stage__vignette,
 .story-stage__shadow,
+.story-stage__backdrop,
 .sequence-canvas-shell,
 .sequence-canvas {
   position: absolute;
   inset: 0;
 }
 
-.story-stage__vignette {
-  z-index: 1;
+.story-stage__backdrop {
+  z-index: 0;
   background:
-    radial-gradient(circle at 50% 50%, rgba(5, 7, 10, 0) 0%, rgba(5, 7, 10, 0.08) 36%, rgba(5, 7, 10, 0.38) 62%, rgba(5, 7, 10, 0.72) 100%),
-    linear-gradient(90deg, rgba(4, 5, 7, 0.92) 0%, rgba(4, 5, 7, 0.16) 26%, rgba(4, 5, 7, 0.16) 74%, rgba(4, 5, 7, 0.92) 100%);
+    linear-gradient(180deg, rgba(7, 5, 4, 0.18), rgba(7, 5, 4, 0.18)),
+    url('/assets/backdrops/fritz-room.png') center center / cover no-repeat;
+}
+
+.story-stage__backdrop--veil {
+  z-index: 1;
+  opacity: 0.88;
+  filter: blur(22px) saturate(0.72) brightness(0.54);
+  transform: scale(1.045);
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 52%,
+    transparent 0%,
+    transparent 16%,
+    rgba(0, 0, 0, 0.12) 24%,
+    rgba(0, 0, 0, 0.58) 42%,
+    #000000 68%,
+    #000000 100%
+  );
+  mask-image: radial-gradient(
+    circle at 50% 52%,
+    transparent 0%,
+    transparent 16%,
+    rgba(0, 0, 0, 0.12) 24%,
+    rgba(0, 0, 0, 0.58) 42%,
+    #000000 68%,
+    #000000 100%
+  );
+}
+
+.story-stage__vignette {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 50% 52%, rgba(7, 5, 4, 0) 0%, rgba(7, 5, 4, 0) 19%, rgba(7, 5, 4, 0.08) 31%, rgba(7, 5, 4, 0.2) 49%, rgba(7, 5, 4, 0.48) 72%, rgba(7, 5, 4, 0.76) 100%),
+    linear-gradient(90deg, rgba(5, 4, 4, 0.84) 0%, rgba(5, 4, 4, 0.18) 22%, rgba(5, 4, 4, 0.1) 50%, rgba(5, 4, 4, 0.18) 78%, rgba(5, 4, 4, 0.84) 100%);
 }
 
 .story-stage__shadow {
-  z-index: 2;
+  z-index: 3;
   background:
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0.16) 56%, rgba(0, 0, 0, 0.38) 100%),
-    linear-gradient(180deg, rgba(4, 5, 7, 0.72) 0%, rgba(4, 5, 7, 0.12) 20%, rgba(4, 5, 7, 0.08) 76%, rgba(4, 5, 7, 0.88) 100%);
+    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0) 16%, rgba(0, 0, 0, 0.04) 28%, rgba(0, 0, 0, 0.16) 54%, rgba(0, 0, 0, 0.34) 100%),
+    linear-gradient(180deg, rgba(4, 3, 3, 0.66) 0%, rgba(4, 3, 3, 0.08) 19%, rgba(4, 3, 3, 0.12) 74%, rgba(4, 3, 3, 0.82) 100%);
   mix-blend-mode: multiply;
 }
 
 .sequence-canvas-shell {
-  z-index: 0;
+  z-index: 4;
   opacity: 0;
   transition: opacity 480ms ease;
 }
@@ -284,7 +317,7 @@ button {
 }
 
 .scene--hero .scene-copy {
-  padding-top: clamp(2rem, 5vh, 5rem);
+  padding-top: clamp(12rem, 26vh, 17rem);
 }
 
 .scene-anchor {
@@ -322,24 +355,36 @@ button {
 .scene-prelude--landing {
   align-self: start;
   grid-column: 1 / -1;
-  margin-top: clamp(5.2rem, 12vh, 7.8rem);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 2vw, 2rem);
+  row-gap: 1.2rem;
+  margin-top: clamp(5.8rem, 12.8vh, 8.4rem);
   margin-bottom: 0;
-  max-width: min(28rem, 100%);
   z-index: 2;
 }
 
-.scene-prelude--center {
-  justify-self: center;
-  text-align: center;
+.scene-prelude--split .scene-prelude__line {
+  margin: 0;
+  max-width: 12ch;
+  color: #ffffff;
+  font-size: clamp(1.26rem, 1.85vw, 2rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  text-shadow: 0 12px 36px rgba(0, 0, 0, 0.32);
 }
 
-.scene-prelude--landing .scene-italic {
-  margin: 0;
-  max-width: 16ch;
-  color: #ffffff;
-  font-size: clamp(1.24rem, 1.6vw, 1.7rem);
-  line-height: 1.16;
-  margin-inline: auto;
+.scene-prelude__line--left {
+  grid-column: 1 / span 4;
+  justify-self: start;
+  text-align: left;
+}
+
+.scene-prelude__line--right {
+  grid-column: 9 / span 4;
+  justify-self: end;
+  text-align: right;
 }
 
 .scene-title {
@@ -443,9 +488,10 @@ button {
 }
 
 .scene-scroll-hint--landing {
+  grid-column: 1 / -1;
   justify-self: center;
   width: fit-content;
-  margin-top: 1.1rem;
+  margin-top: 0.15rem;
   color: rgba(255, 255, 255, 0.78);
 }
 
@@ -557,6 +603,14 @@ button {
     grid-column: 8 / span 5;
   }
 
+  .scene-prelude__line--left {
+    grid-column: 1 / span 5;
+  }
+
+  .scene-prelude__line--right {
+    grid-column: 8 / span 5;
+  }
+
   .site-nav {
     gap: 0.85rem 1rem;
   }
@@ -589,8 +643,8 @@ button {
 
   .story-stage__vignette {
     background:
-      radial-gradient(circle at 50% 50%, rgba(5, 7, 10, 0) 0%, rgba(5, 7, 10, 0.14) 36%, rgba(5, 7, 10, 0.5) 68%, rgba(5, 7, 10, 0.82) 100%),
-      linear-gradient(180deg, rgba(4, 5, 7, 0.9) 0%, rgba(4, 5, 7, 0.32) 24%, rgba(4, 5, 7, 0.32) 72%, rgba(4, 5, 7, 0.92) 100%);
+      radial-gradient(circle at 50% 52%, rgba(7, 5, 4, 0) 0%, rgba(7, 5, 4, 0.04) 24%, rgba(7, 5, 4, 0.24) 52%, rgba(7, 5, 4, 0.58) 76%, rgba(7, 5, 4, 0.84) 100%),
+      linear-gradient(180deg, rgba(4, 3, 3, 0.88) 0%, rgba(4, 3, 3, 0.28) 24%, rgba(4, 3, 3, 0.28) 72%, rgba(4, 3, 3, 0.9) 100%);
   }
 
   .scene {
@@ -621,12 +675,22 @@ button {
   }
 
   .scene-prelude--landing {
+    grid-template-columns: 1fr;
+    row-gap: 0.8rem;
     margin-top: 0.2rem;
     margin-bottom: 1.35rem;
-    width: min(100%, 20rem);
+    width: min(100%, 24rem);
   }
 
-  .scene-prelude--landing .scene-italic {
+  .scene-prelude__line--left,
+  .scene-prelude__line--right {
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: 16ch;
+    text-align: center;
+  }
+
+  .scene-prelude--split .scene-prelude__line {
     font-size: clamp(1.08rem, 5vw, 1.28rem);
   }
 
