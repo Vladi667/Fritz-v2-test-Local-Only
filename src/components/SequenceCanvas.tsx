@@ -7,6 +7,43 @@ type SequenceCanvasProps = {
   ready: boolean;
 };
 
+function paintWatermarkCleanup(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const cleanupX = x + width * 0.02;
+  const cleanupY = y + height * 0.02;
+  const cleanupWidth = width * 0.12;
+  const cleanupHeight = height * 0.09;
+  const radius = Math.min(cleanupWidth, cleanupHeight) * 0.22;
+
+  context.save();
+  context.fillStyle = '#000000';
+  context.shadowColor = '#000000';
+  context.shadowBlur = 18;
+  context.beginPath();
+  context.moveTo(cleanupX + radius, cleanupY);
+  context.lineTo(cleanupX + cleanupWidth - radius, cleanupY);
+  context.quadraticCurveTo(cleanupX + cleanupWidth, cleanupY, cleanupX + cleanupWidth, cleanupY + radius);
+  context.lineTo(cleanupX + cleanupWidth, cleanupY + cleanupHeight - radius);
+  context.quadraticCurveTo(
+    cleanupX + cleanupWidth,
+    cleanupY + cleanupHeight,
+    cleanupX + cleanupWidth - radius,
+    cleanupY + cleanupHeight,
+  );
+  context.lineTo(cleanupX + radius, cleanupY + cleanupHeight);
+  context.quadraticCurveTo(cleanupX, cleanupY + cleanupHeight, cleanupX, cleanupY + cleanupHeight - radius);
+  context.lineTo(cleanupX, cleanupY + radius);
+  context.quadraticCurveTo(cleanupX, cleanupY, cleanupX + radius, cleanupY);
+  context.closePath();
+  context.fill();
+  context.restore();
+}
+
 export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameIndex = useMemo(() => getFrameIndex(progress, images.length), [images.length, progress]);
@@ -65,6 +102,7 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     context.imageSmoothingQuality = 'high';
     context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
     context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+    paintWatermarkCleanup(context, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
   }, [frameIndex, images]);
 
