@@ -20,6 +20,35 @@ export function getFrameIndex(progress: number, frameCount: number) {
   return Math.round(clamp(progress) * (frameCount - 1));
 }
 
+export function getContainDrawRect(
+  sourceWidth: number,
+  sourceHeight: number,
+  targetWidth: number,
+  targetHeight: number,
+  scale = 1,
+) {
+  const safeScale = clamp(scale, 0.1, 1);
+  const sourceRatio = sourceWidth / sourceHeight;
+  const targetRatio = targetWidth / targetHeight;
+  let drawWidth = targetWidth;
+  let drawHeight = targetHeight;
+
+  if (sourceRatio > targetRatio) {
+    drawWidth = targetWidth * safeScale;
+    drawHeight = drawWidth / sourceRatio;
+  } else {
+    drawHeight = targetHeight * safeScale;
+    drawWidth = drawHeight * sourceRatio;
+  }
+
+  return {
+    drawWidth,
+    drawHeight,
+    offsetX: (targetWidth - drawWidth) / 2,
+    offsetY: (targetHeight - drawHeight) / 2,
+  };
+}
+
 export function getActiveBeat(progress: number, beats: CategoryBeat[]) {
   return beats.find((beat) => progress >= beat.start && progress <= beat.end) ?? null;
 }

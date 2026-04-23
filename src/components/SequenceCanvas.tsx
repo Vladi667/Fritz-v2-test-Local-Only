@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useRef} from 'react';
-import {getFrameIndex} from '../lib/motion';
+import {getContainDrawRect, getFrameIndex} from '../lib/motion';
 
 type SequenceCanvasProps = {
   images: HTMLImageElement[];
@@ -31,30 +31,26 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     canvas.height = Math.max(1, Math.floor(height * ratio));
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, width, height);
+    context.filter = 'brightness(1.08) contrast(1.05)';
 
-    const imageRatio = image.naturalWidth / image.naturalHeight;
-    const canvasRatio = width / height;
-    let drawWidth = width;
-    let drawHeight = height;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    if (imageRatio > canvasRatio) {
-      drawHeight = height;
-      drawWidth = height * imageRatio;
-      offsetX = (width - drawWidth) / 2;
-    } else {
-      drawWidth = width;
-      drawHeight = width / imageRatio;
-      offsetY = (height - drawHeight) / 2;
-    }
+    const {drawWidth, drawHeight, offsetX, offsetY} = getContainDrawRect(
+      image.naturalWidth,
+      image.naturalHeight,
+      width,
+      height,
+      0.92,
+    );
 
     context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+    context.filter = 'none';
   }, [frameIndex, images]);
 
   return (
     <div className={`sequence-canvas-shell ${ready ? 'is-ready' : ''}`}>
-      <canvas className="sequence-canvas" ref={canvasRef} aria-label="Animated personage sequence" />
+      <div className="subject-column">
+        <div className="subject-aura" aria-hidden="true" />
+        <canvas className="sequence-canvas" ref={canvasRef} aria-label="Animated personage sequence" />
+      </div>
       {!ready ? <p className="sequence-loading">Preparing the sequence…</p> : null}
     </div>
   );

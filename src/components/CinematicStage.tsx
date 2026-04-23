@@ -16,20 +16,31 @@ export function CinematicStage() {
   const {images, isReady} = useImageSequence();
 
   const activeBeat = useMemo(() => getActiveBeat(normalizedProgress, categories), [normalizedProgress]);
+  const introVisible = normalizedProgress < 0.15;
+  const endingVisible = normalizedProgress > 0.92;
 
   return (
     <section className="sequence-section" ref={sectionRef}>
       <div className="sequence-sticky">
         <Atmosphere progress={normalizedProgress} />
-        <div className="stage-headline">
-          <p>Interactive sequence</p>
-          <span>{String(Math.round(normalizedProgress * 100)).padStart(2, '0')} / 100</span>
-        </div>
         <SequenceCanvas images={images} progress={normalizedProgress} ready={isReady} />
+        <div className={`title-overlay ${introVisible ? 'is-visible' : ''}`}>
+          <p className="overlay-kicker">Fritz v2</p>
+          <h1>Centered. Uncut. In frame.</h1>
+          <p className="overlay-copy">The action changes. The figure stays.</p>
+        </div>
         <div className="overlay-grid">
           {categories.map((beat) => (
             <CategoryOverlay key={beat.id} beat={beat} active={activeBeat?.id === beat.id} />
           ))}
+        </div>
+        <div className={`end-overlay ${endingVisible ? 'is-visible' : ''}`}>
+          <p className="overlay-kicker">Last beat</p>
+          <h2>The motion settles. The center holds.</h2>
+        </div>
+        <div className="scroll-prompt" aria-hidden="true">
+          <span />
+          <p>Scroll through the action</p>
         </div>
         <div className="sequence-progress" aria-hidden="true">
           <span style={{transform: `scaleX(${normalizedProgress || 0.001})`}} />

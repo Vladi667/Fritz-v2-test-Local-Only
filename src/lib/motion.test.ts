@@ -2,6 +2,7 @@ import {categories} from '../data/categories';
 import {
   buildFramePaths,
   clamp,
+  getContainDrawRect,
   getActiveBeat,
   getFrameIndex,
   quantizeProgress,
@@ -40,5 +41,23 @@ describe('motion helpers', () => {
     expect(clamp(-1)).toBe(0);
     expect(clamp(2)).toBe(1);
     expect(clamp(0.4)).toBe(0.4);
+  });
+
+  it('calculates a centered contain rect for portrait imagery in a tall stage', () => {
+    const rect = getContainDrawRect(720, 1280, 420, 760, 0.92);
+
+    expect(rect.drawWidth).toBeLessThanOrEqual(420);
+    expect(rect.drawHeight).toBeLessThanOrEqual(760);
+    expect(rect.offsetX).toBeCloseTo((420 - rect.drawWidth) / 2, 4);
+    expect(rect.offsetY).toBeCloseTo((760 - rect.drawHeight) / 2, 4);
+  });
+
+  it('keeps a portrait subject smaller inside a wide viewport to avoid cropping', () => {
+    const rect = getContainDrawRect(720, 1280, 1440, 900, 0.78);
+
+    expect(rect.drawHeight).toBeCloseTo(702, 0);
+    expect(rect.drawWidth).toBeCloseTo(394.875, 3);
+    expect(rect.offsetX).toBeCloseTo((1440 - rect.drawWidth) / 2, 4);
+    expect(rect.offsetY).toBeCloseTo((900 - rect.drawHeight) / 2, 4);
   });
 });
