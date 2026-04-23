@@ -10,6 +10,8 @@ type Scene = {
   id: string;
   navLabel: string;
   eyebrow: string;
+  preludeLines?: string[];
+  scrollHint?: string;
   title: string;
   italicLine?: string;
   description: string;
@@ -47,6 +49,8 @@ export function CinematicStage() {
         id: 'arrival',
         navLabel: 'Arrival',
         eyebrow: 'FRITZ',
+        preludeLines: ['Some worlds are not introduced.', 'They are discovered.'],
+        scrollHint: 'Scroll to enter',
         title: 'Brands built with quiet power.',
         description:
           'FRITZ creates digital experiences, brand worlds, and growth systems for businesses that want to look sharper, feel rarer, and scale with control.',
@@ -180,6 +184,17 @@ export function CinematicStage() {
           <div className="story-stage__shadow" />
         </div>
 
+        <div
+          className="story-progress"
+          aria-label="Discovery progress"
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={Math.round(normalizedProgress * 100)}
+          role="progressbar"
+        >
+          <span style={{transform: `scaleY(${Math.max(normalizedProgress, 0.04)})`}} />
+        </div>
+
         {scenes.map((scene, index) => {
           const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
           const isHero = scene.kind === 'hero';
@@ -198,6 +213,13 @@ export function CinematicStage() {
               <div className="scene-grid">
                 <div className={`scene-copy scene-copy--${scene.align}`}>
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
+                  {scene.preludeLines ? (
+                    <div className="scene-prelude" aria-label="Arrival introduction">
+                      {scene.preludeLines.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  ) : null}
                   {isHero ? (
                     <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
                       {scene.title}
@@ -208,6 +230,7 @@ export function CinematicStage() {
                     </h2>
                   )}
                   {scene.italicLine ? <p className="scene-italic">{scene.italicLine}</p> : null}
+                  {scene.scrollHint ? <p className="scene-scroll-hint">{scene.scrollHint}</p> : null}
                   <p className="scene-body">{scene.description}</p>
                   <div className="scene-actions">
                     <a className="button-link button-link--primary" href={scene.href}>

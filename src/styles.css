@@ -150,6 +150,28 @@ button {
   pointer-events: none;
 }
 
+.story-progress {
+  position: fixed;
+  right: clamp(0.9rem, 2vw, 1.5rem);
+  bottom: clamp(0.9rem, 2vw, 1.4rem);
+  z-index: 18;
+  width: 2px;
+  height: clamp(72px, 12vh, 108px);
+  background: rgba(237, 227, 212, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.story-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(163, 138, 107, 0.18), rgba(237, 227, 212, 0.62));
+  transform-origin: center bottom;
+  transition: transform 220ms ease-out;
+}
+
 .story-stage__vignette,
 .story-stage__shadow,
 .sequence-canvas-shell,
@@ -261,6 +283,23 @@ button {
   color: var(--ink-faint);
 }
 
+.scene-prelude {
+  margin-bottom: 1.35rem;
+}
+
+.scene-prelude p {
+  margin: 0;
+  max-width: 13ch;
+  font-size: clamp(1.1rem, 1.35vw, 1.42rem);
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  color: rgba(237, 227, 212, 0.82);
+}
+
+.scene-prelude p + p {
+  margin-top: 0.22rem;
+}
+
 .scene-title {
   margin: 0;
   font-weight: 500;
@@ -284,6 +323,25 @@ button {
   line-height: 1.34;
   font-style: italic;
   color: rgba(237, 227, 212, 0.9);
+}
+
+.scene-scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1.5rem 0 0;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(237, 227, 212, 0.46);
+}
+
+.scene-scroll-hint::before {
+  content: '';
+  width: 1.8rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(237, 227, 212, 0.32), rgba(237, 227, 212, 0));
 }
 
 .scene-body {
@@ -455,6 +513,10 @@ button {
     font-size: clamp(3rem, 17vw, 5rem);
   }
 
+  .scene-prelude p {
+    font-size: clamp(1rem, 4.7vw, 1.24rem);
+  }
+
   .scene-title--chapter {
     font-size: clamp(2rem, 10vw, 3rem);
   }
@@ -483,7 +545,8 @@ button {
   .sequence-canvas-shell,
   .scene-copy,
   .button-link,
-  .site-nav__link::after {
+  .site-nav__link::after,
+  .story-progress span {
     transition: none;
   }
 }
