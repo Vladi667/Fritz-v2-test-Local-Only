@@ -1,6 +1,7 @@
-import {useEffect, useMemo, useRef} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {keyConnectedNearBlackPixels} from '../lib/backgroundKeying';
-import {getContainDrawRect, getFrameIndex} from '../lib/motion';
+import {getContainDrawRect, getFrameSample} from '../lib/motion';
+import {useReducedMotion} from '../hooks/useReducedMotion';
 
 type SequenceCanvasProps = {
   images: HTMLImageElement[];
@@ -64,13 +65,54 @@ function paintWatermarkCleanup(
 }
 
 export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: SequenceCanvasProps) {
+  const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const frameIndex = useMemo(() => getFrameIndex(progress, images.length), [images.length, progress]);
+  const targetProgressRef = useRef(progress);
+  const cacheDimensionsRef = useRef<string>('');
+  const keyedFrameCacheRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const [displayProgress, setDisplayProgress] = useState(progress);
+  const frameSample = useMemo(() => getFrameSample(displayProgress, images.length), [displayProgress, images.length]);
+
+  useEffect(() => {
+    targetProgressRef.current = progress;
+    if (prefersReducedMotion) {
+      setDisplayProgress(progress);
+    }
+  }, [prefersReducedMotion, progress]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || images.length === 0) {
+      return;
+    }
+
+    let rafId = 0;
+
+    const tick = () => {
+      setDisplayProgress((current) => {
+        const target = targetProgressRef.current;
+        const delta = target - current;
+
+        if (Math.abs(delta) < 0.0008) {
+          return target;
+        }
+
+        return current + delta * 0.14;
+      });
+
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [images.length, prefersReducedMotion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const image = images[frameIndex];
-    if (!canvas || !image || image.naturalWidth === 0 || image.naturalHeight === 0) {
+    const baseImage = images[frameSample.baseIndex];
+    if (!canvas || !baseImage || baseImage.naturalWidth === 0 || baseImage.naturalHeight === 0) {
       return;
     }
 
@@ -89,19 +131,63 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.clearRect(0, 0, width, height);
 
     const {drawWidth, drawHeight, offsetX, offsetY} = getContainDrawRect(
-      image.naturalWidth,
-      image.naturalHeight,
+      baseImage.naturalWidth,
+      baseImage.naturalHeight,
       width,
       height,
       subjectScale,
     );
-    const keyedFrame = createKeyedFrameCanvas(image, drawWidth, drawHeight);
+    const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
+    if (cacheDimensionsRef.current !== cacheKey) {
+      keyedFrameCacheRef.current.clear();
+      cacheDimensionsRef.current = cacheKey;
+    }
+
+    const getKeyedFrame = (index: number) => {
+      const cached = keyedFrameCacheRef.current.get(index);
+      if (cached) {
+        return cached;
+      }
+
+      const sourceImage = images[index];
+      if (!sourceImage || sourceImage.naturalWidth === 0 || sourceImage.naturalHeight === 0) {
+        return null;
+      }
+
+      const nextFrame = createKeyedFrameCanvas(sourceImage, drawWidth, drawHeight);
+      keyedFrameCacheRef.current.set(index, nextFrame);
+
+      if (keyedFrameCacheRef.current.size > 8) {
+        const oldestKey = keyedFrameCacheRef.current.keys().next().value;
+        if (oldestKey !== undefined) {
+          keyedFrameCacheRef.current.delete(oldestKey);
+        }
+      }
+
+      return nextFrame;
+    };
+
+    const keyedBaseFrame = getKeyedFrame(frameSample.baseIndex);
+    if (!keyedBaseFrame) {
+      return;
+    }
+
+    const easedMix = frameSample.mix * frameSample.mix * (3 - 2 * frameSample.mix);
+    const blendAlpha = prefersReducedMotion ? 0 : easedMix * 0.34;
+    const keyedNextFrame =
+      blendAlpha > 0.001 && frameSample.nextIndex !== frameSample.baseIndex
+        ? getKeyedFrame(frameSample.nextIndex)
+        : null;
 
     // Outside-only blur halo that helps the rectangular frame melt into the page background.
     context.save();
     context.filter = 'blur(24px) brightness(0.72) saturate(0.82)';
     context.globalAlpha = 0.38;
-    context.drawImage(keyedFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
+    context.drawImage(keyedBaseFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
+    if (keyedNextFrame && blendAlpha > 0) {
+      context.globalAlpha = blendAlpha * 0.9;
+      context.drawImage(keyedNextFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
+    }
 
     // Cut the center back out so the blur only remains outside the image boundary.
     context.globalCompositeOperation = 'destination-out';
@@ -116,10 +202,16 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
     context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
-    context.drawImage(keyedFrame, offsetX, offsetY, drawWidth, drawHeight);
+    context.globalAlpha = 1;
+    context.drawImage(keyedBaseFrame, offsetX, offsetY, drawWidth, drawHeight);
+    if (keyedNextFrame && blendAlpha > 0) {
+      context.globalAlpha = blendAlpha;
+      context.drawImage(keyedNextFrame, offsetX, offsetY, drawWidth, drawHeight);
+      context.globalAlpha = 1;
+    }
     paintWatermarkCleanup(context, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
-  }, [frameIndex, images, subjectScale]);
+  }, [frameSample, images, prefersReducedMotion, subjectScale]);
 
   return (
     <div className={`sequence-canvas-shell ${ready ? 'is-ready' : ''}`}>

@@ -6,6 +6,7 @@ import {
   getCoverDrawRect,
   getActiveBeat,
   getFrameIndex,
+  getFrameSample,
   quantizeProgress,
 } from './motion';
 
@@ -24,6 +25,24 @@ describe('motion helpers', () => {
     expect(getFrameIndex(0, 240)).toBe(0);
     expect(getFrameIndex(0.5, 240)).toBe(120);
     expect(getFrameIndex(1, 240)).toBe(239);
+  });
+
+  it('calculates a frame sample with next-frame blend information', () => {
+    expect(getFrameSample(0, 240)).toEqual({
+      baseIndex: 0,
+      nextIndex: 1,
+      mix: 0,
+    });
+    expect(getFrameSample(0.5, 240)).toEqual({
+      baseIndex: 119,
+      nextIndex: 120,
+      mix: 0.5,
+    });
+    expect(getFrameSample(1, 240)).toEqual({
+      baseIndex: 239,
+      nextIndex: 239,
+      mix: 0,
+    });
   });
 
   it('finds the active category beat for a progress value', () => {

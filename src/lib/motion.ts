@@ -20,6 +20,26 @@ export function getFrameIndex(progress: number, frameCount: number) {
   return Math.round(clamp(progress) * (frameCount - 1));
 }
 
+export function getFrameSample(progress: number, frameCount: number) {
+  if (frameCount <= 1) {
+    return {
+      baseIndex: 0,
+      nextIndex: 0,
+      mix: 0,
+    };
+  }
+
+  const position = clamp(progress) * (frameCount - 1);
+  const baseIndex = Math.floor(position);
+  const nextIndex = Math.min(baseIndex + 1, frameCount - 1);
+
+  return {
+    baseIndex,
+    nextIndex,
+    mix: position - baseIndex,
+  };
+}
+
 export function getContainDrawRect(
   sourceWidth: number,
   sourceHeight: number,
