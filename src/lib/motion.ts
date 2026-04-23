@@ -1,6 +1,6 @@
 import type {CategoryBeat} from '../types';
 
-export const FRAME_COUNT = 240;
+export const FRAME_COUNT = 300;
 
 export function clamp(value: number, min = 0, max = 1) {
   return Math.min(Math.max(value, min), max);

@@ -1,5 +1,5 @@
 param(
-  [string]$ZipPath = "C:/Users/Admin/Downloads/ezgif-88790b6bb351b7b2-jpg.zip",
+  [string]$ZipPath = "C:/Users/Admin/Downloads/ezgif-3c5f50d9f80428b1-jpg.zip",
   [string]$OutputDir = "public/assets/frames"
 )
 
