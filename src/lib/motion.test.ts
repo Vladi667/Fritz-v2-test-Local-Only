@@ -27,9 +27,10 @@ describe('motion helpers', () => {
   });
 
   it('finds the active category beat for a progress value', () => {
-    expect(getActiveBeat(0.3, categories)?.id).toBe('website-creation');
-    expect(getActiveBeat(0.55, categories)?.id).toBe('brand-design');
-    expect(getActiveBeat(0.8, categories)?.id).toBe('business-scaling');
+    expect(getActiveBeat(0.1, categories)?.id).toBe('website-creation');
+    expect(getActiveBeat(0.35, categories)?.id).toBe('brand-design');
+    expect(getActiveBeat(0.6, categories)?.id).toBe('business-scaling');
+    expect(getActiveBeat(0.82, categories)?.id).toBe('tba');
     expect(getActiveBeat(1, categories)).toBeNull();
   });
 

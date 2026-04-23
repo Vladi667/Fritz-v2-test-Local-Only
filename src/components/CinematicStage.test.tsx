@@ -1,4 +1,4 @@
-import {render, screen, within} from '@testing-library/react';
+import {act, render, screen, within} from '@testing-library/react';
 import {CinematicStage} from './CinematicStage';
 
 class MockIntersectionObserver {
@@ -29,12 +29,20 @@ vi.mock('./SequenceCanvas', () => ({
 }));
 
 describe('CinematicStage', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(async () => {
     const {useScrollProgress} = await import('../hooks/useScrollProgress');
     vi.mocked(useScrollProgress).mockReturnValue(0);
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
   });
 
-  it('shows the poetic arrival copy in italic and the discovery progress indicator', () => {
+  it('opens with the cinematic loading intro before the homepage scenes', () => {
     render(<CinematicStage />);
 
     expect(screen.getByTestId('story-viewport')).toHaveStyle({
@@ -46,49 +54,48 @@ describe('CinematicStage', () => {
       'story-stage__backdrop',
       'story-stage__backdrop--veil',
     );
-    const landingPrelude = screen.getByLabelText('Arrival introduction');
-    expect(landingPrelude).toHaveClass('arrival-overlay', 'arrival-overlay--visible');
-    const leftLine = within(landingPrelude).getByText('Certain worlds do not present themselves.');
-    const rightLine = within(landingPrelude).getByText('They are discovered in silence.');
-    expect(leftLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--left');
-    expect(rightLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--right');
-    const landingScrollHint = within(landingPrelude).getByText('Scroll to enter');
-    expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing', 'scene-scroll-hint--compact');
-    expect(landingScrollHint).toHaveClass('scene-scroll-hint--arrival');
+
+    const loadingIntro = screen.getByLabelText('Loading introduction');
+    expect(within(loadingIntro).getByText('Certain worlds do not present themselves.')).toHaveClass(
+      'scene-italic',
+      'loading-intro__line',
+      'loading-intro__line--left',
+    );
+    expect(within(loadingIntro).getByText('They are discovered in silence.')).toHaveClass(
+      'scene-italic',
+      'loading-intro__line',
+      'loading-intro__line--right',
+    );
+    expect(within(loadingIntro).getByText('Scroll to enter')).toHaveClass(
+      'scene-scroll-hint',
+      'scene-scroll-hint--landing',
+      'scene-scroll-hint--compact',
+      'loading-intro__hint',
+    );
+
+    const nav = screen.getByLabelText('Primary');
+    expect(within(nav).queryByText('Arrival')).not.toBeInTheDocument();
+    expect(within(nav).getByText('Website Creation')).toBeInTheDocument();
+    expect(within(nav).getByText('TBA')).toBeInTheDocument();
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
   });
 
-  it('fades the arrival overlay away as scroll progress increases', async () => {
-    const {useScrollProgress} = await import('../hooks/useScrollProgress');
-    vi.mocked(useScrollProgress).mockReturnValue(0.28);
-
+  it('hands off from the loading intro to the homepage after the cinematic hold', () => {
     render(<CinematicStage />);
 
-    expect(screen.getByLabelText('Arrival introduction')).toHaveStyle({
-      opacity: '0',
+    act(() => {
+      vi.advanceTimersByTime(3700);
     });
-    expect(screen.getByTestId('story-viewport')).toHaveStyle({
-      '--backdrop-scale': '1.0154',
-      '--backdrop-shift-y': '-6.72px',
-    });
+
+    expect(screen.queryByLabelText('Loading introduction')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Website Creation')).toBeInTheDocument();
   });
 
-  it('treats quiet as a distinct cinematic line in the hero title', () => {
-    render(<CinematicStage />);
-
-    const quietLine = screen.getByText('quiet');
-    expect(quietLine).toBeInTheDocument();
-    expect(quietLine).toHaveClass('scene-title__quiet');
-    expect(quietLine.closest('.scene-title--hero')).toBeInTheDocument();
-  });
-
-  it('renders chapter italic lines on the opposite side with the updated brand sentence', () => {
+  it('renders chapter italic lines on the opposite side and includes the placeholder TBA chapter', () => {
     render(<CinematicStage />);
 
     const brandSection = screen.getByLabelText('Brand Design');
     const brandQuote = within(brandSection).getByText('Before buying the offer, they buy the feeling.');
-    expect(brandQuote).toBeInTheDocument();
-    expect(brandQuote).toHaveClass('scene-italic');
     expect(brandQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--start', 'scene-quote--center');
 
     const websiteSection = screen.getByLabelText('Website Creation');
@@ -96,5 +103,8 @@ describe('CinematicStage', () => {
       'A website should not just present a business. It should elevate it.',
     );
     expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end', 'scene-quote--center');
+
+    const tbaSection = screen.getByLabelText('TBA');
+    expect(within(tbaSection).getAllByText('TBA').length).toBeGreaterThanOrEqual(4);
   });
 });

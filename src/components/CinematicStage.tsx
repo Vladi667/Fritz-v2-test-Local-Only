@@ -6,36 +6,22 @@ import {useScrollProgress} from '../hooks/useScrollProgress';
 import {quantizeProgress} from '../lib/motion';
 import {SequenceCanvas} from './SequenceCanvas';
 
+const INTRO_LINES = ['Certain worlds do not present themselves.', 'They are discovered in silence.'];
+const INTRO_SCROLL_HINT = 'Scroll to enter';
+const INTRO_FADE_DELAY_MS = 2500;
+const INTRO_TOTAL_MS = 3600;
+
 type Scene = {
   id: string;
   navLabel: string;
   eyebrow: string;
-  preludeLines?: string[];
-  scrollHint?: string;
   title: string;
   italicLine?: string;
   description: string;
   cta: string;
   href: string;
   align: 'start' | 'end';
-  kind: 'hero' | 'chapter';
 };
-
-function renderHeroTitle(title: string) {
-  const parts = title.match(/Brands built with\s+quiet\s+power\./i);
-
-  if (!parts) {
-    return title;
-  }
-
-  return (
-    <>
-      <span className="scene-title__line">Brands built with</span>
-      <span className="scene-title__line scene-title__quiet">quiet</span>
-      <span className="scene-title__line">power.</span>
-    </>
-  );
-}
 
 const joinScene: Scene = {
   id: 'join-the-adventure',
@@ -46,10 +32,11 @@ const joinScene: Scene = {
   description:
     'FRITZ brings together UX/UI, cinematic direction, Superpower, and Remotion to shape digital experiences that feel less like marketing and more like gravity.',
   cta: 'Join the Adventure',
-  href: '#arrival',
+  href: '#website-creation',
   align: 'end',
-  kind: 'chapter',
 };
+
+type IntroPhase = 'visible' | 'fading' | 'done';
 
 export function CinematicStage() {
   const storyRef = useRef<HTMLDivElement>(null);
@@ -61,20 +48,6 @@ export function CinematicStage() {
 
   const scenes = useMemo<Scene[]>(
     () => [
-      {
-        id: 'arrival',
-        navLabel: 'Arrival',
-        eyebrow: 'FRITZ',
-        preludeLines: ['Certain worlds do not present themselves.', 'They are discovered in silence.'],
-        scrollHint: 'Scroll to enter',
-        title: 'Brands built with quiet power.',
-        description:
-          'FRITZ creates digital experiences, brand worlds, and growth systems for businesses that want to look sharper, feel rarer, and scale with control.',
-        cta: 'Enter FRITZ',
-        href: '#website-creation',
-        align: 'start',
-        kind: 'hero',
-      },
       ...categories.map((category) => ({
         id: category.id,
         navLabel: category.navLabel,
@@ -85,35 +58,51 @@ export function CinematicStage() {
         cta: category.cta,
         href: `#${category.id}`,
         align: category.align,
-        kind: 'chapter' as const,
       })),
       joinScene,
     ],
     [],
   );
 
+  const firstSceneId = scenes[0]?.id ?? 'website-creation';
   const navigationItems = useMemo(
     () => scenes.map(({id, navLabel}) => ({id, label: navLabel})),
     [scenes],
   );
-  const arrivalProgress = Math.min(Math.max(normalizedProgress / 0.14, 0), 1);
-  const arrivalOpacity = 1 - arrivalProgress;
-  const heroPresence = Math.min(Math.max((normalizedProgress - 0.035) / 0.16, 0), 1);
   const stageStyle = useMemo(
     () =>
       ({
-        '--backdrop-scale': `${(1 + normalizedProgress * 0.055).toFixed(4)}`,
-        '--backdrop-shift-y': `${(normalizedProgress * -24).toFixed(2)}px`,
+        '--backdrop-scale': `${(1 + normalizedProgress * 0.075).toFixed(4)}`,
+        '--backdrop-shift-y': `${(normalizedProgress * -30).toFixed(2)}px`,
         '--backdrop-veil-opacity': `${(0.9 + normalizedProgress * 0.08).toFixed(3)}`,
         '--backdrop-vignette-opacity': `${(0.86 + normalizedProgress * 0.12).toFixed(3)}`,
-        '--arrival-progress': `${arrivalProgress.toFixed(4)}`,
-        '--hero-presence': `${heroPresence.toFixed(4)}`,
       }) as CSSProperties,
-    [arrivalProgress, heroPresence, normalizedProgress],
+    [normalizedProgress],
   );
 
-  const [revealedScenes, setRevealedScenes] = useState<Record<string, boolean>>({arrival: true});
-  const [activeSceneId, setActiveSceneId] = useState<string>('arrival');
+  const [revealedScenes, setRevealedScenes] = useState<Record<string, boolean>>(() => ({[firstSceneId]: true}));
+  const [activeSceneId, setActiveSceneId] = useState<string>(firstSceneId);
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(prefersReducedMotion ? 'done' : 'visible');
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setIntroPhase('done');
+      return;
+    }
+
+    const fadeTimer = window.setTimeout(() => {
+      setIntroPhase('fading');
+    }, INTRO_FADE_DELAY_MS);
+
+    const doneTimer = window.setTimeout(() => {
+      setIntroPhase('done');
+    }, INTRO_TOTAL_MS);
+
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(doneTimer);
+    };
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const nodes = scenes
@@ -184,10 +173,10 @@ export function CinematicStage() {
   const getOppositeAlign = (align: Scene['align']) => (align === 'start' ? 'end' : 'start');
 
   return (
-    <div className="fritz-home">
+    <div className={`fritz-home ${introPhase !== 'done' ? 'fritz-home--intro' : ''}`}>
       <header className="site-header">
         <div className="site-header__inner">
-          <a className="brandmark" href="#arrival" aria-label="Go to FRITZ arrival">
+          <a className="brandmark" href={`#${firstSceneId}`} aria-label="Go to FRITZ homepage">
             <img className="brandmark__logo" src="/assets/brand/fritz-logo.png" alt="FRITZ" />
           </a>
           <nav className="site-nav" aria-label="Primary">
@@ -205,6 +194,21 @@ export function CinematicStage() {
         </div>
       </header>
 
+      {introPhase !== 'done' ? (
+        <div
+          className={`loading-intro ${introPhase === 'fading' ? 'loading-intro--fading' : 'loading-intro--visible'}`}
+          aria-label="Loading introduction"
+        >
+          <div className="loading-intro__inner">
+            <p className="scene-italic loading-intro__line loading-intro__line--left">{INTRO_LINES[0]}</p>
+            <p className="scene-italic loading-intro__line loading-intro__line--right">{INTRO_LINES[1]}</p>
+            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact loading-intro__hint">
+              {INTRO_SCROLL_HINT}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="story-viewport" data-testid="story-viewport" ref={storyRef} style={stageStyle}>
         <div className="story-stage" aria-hidden="true">
           <div className="story-stage__backdrop" data-testid="story-stage-backdrop" />
@@ -221,27 +225,6 @@ export function CinematicStage() {
           <div className="story-stage__vignette" />
           <div className="story-stage__shadow" />
         </div>
-        <div
-          className="arrival-overlay arrival-overlay--visible"
-          aria-label="Arrival introduction"
-          style={{
-            opacity: arrivalOpacity,
-            transform: `translate3d(0, ${arrivalProgress * 26}px, 0)`,
-            filter: `blur(${arrivalProgress * 10}px)`,
-          }}
-        >
-          <div className="arrival-overlay__inner">
-            <p className="scene-italic scene-prelude__line scene-prelude__line--left">
-              {scenes[0].preludeLines?.[0]}
-            </p>
-            <p className="scene-italic scene-prelude__line scene-prelude__line--right">
-              {scenes[0].preludeLines?.[1]}
-            </p>
-            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact scene-scroll-hint--arrival">
-              {scenes[0].scrollHint}
-            </p>
-          </div>
-        </div>
 
         <div
           className="story-progress"
@@ -256,62 +239,34 @@ export function CinematicStage() {
 
         {scenes.map((scene, index) => {
           const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
-          const isHero = scene.kind === 'hero';
           const quoteAlign = getOppositeAlign(scene.align);
-          const secondaryHref = isHero ? '#paths' : '#join-the-adventure';
-          const secondaryLabel = isHero ? 'Explore the paths' : undefined;
 
           return (
             <section
               key={scene.id}
               id={scene.id}
               ref={registerScene(scene.id)}
-              className={`scene scene--${scene.align} scene--${scene.kind} ${isVisible ? 'is-visible' : ''}`}
+              className={`scene scene--${scene.align} scene--chapter ${isVisible ? 'is-visible' : ''}`}
               data-active={activeSceneId === scene.id}
               aria-labelledby={`${scene.id}-title`}
             >
-              {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
+              {index === 0 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
-                {!isHero && scene.italicLine ? (
+                {scene.italicLine ? (
                   <div className={`scene-quote scene-quote--${quoteAlign} scene-quote--center`}>
                     <p className="scene-italic">{scene.italicLine}</p>
                   </div>
                 ) : null}
-                <div
-                  className={`scene-copy scene-copy--${scene.align}`}
-                  style={
-                    isHero
-                      ? {
-                          opacity: `${Math.max(heroPresence, 0.18)}`,
-                          transform: `translate3d(0, ${(1 - heroPresence) * 24}px, 0)`,
-                          filter: `blur(${(1 - heroPresence) * 7}px)`,
-                        }
-                      : undefined
-                  }
-                >
+                <div className={`scene-copy scene-copy--${scene.align}`}>
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
-                  {isHero ? (
-                    <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
-                      {renderHeroTitle(scene.title)}
-                    </h1>
-                  ) : (
-                    <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
-                      {scene.title}
-                    </h2>
-                  )}
-                  {scene.scrollHint && !isHero ? (
-                    <p className={`scene-scroll-hint ${isHero ? 'scene-scroll-hint--landing' : ''}`}>{scene.scrollHint}</p>
-                  ) : null}
+                  <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
+                    {scene.title}
+                  </h2>
                   <p className="scene-body">{scene.description}</p>
                   <div className="scene-actions">
                     <a className="button-link button-link--primary" href={scene.href}>
                       {scene.cta}
                     </a>
-                    {secondaryLabel ? (
-                      <a className="button-link button-link--secondary" href={secondaryHref}>
-                        {secondaryLabel}
-                      </a>
-                    ) : null}
                   </div>
                 </div>
               </div>

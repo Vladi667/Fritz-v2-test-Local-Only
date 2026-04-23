@@ -1,4 +1,5 @@
 import {useEffect, useMemo, useRef} from 'react';
+import {keyConnectedNearBlackPixels} from '../lib/backgroundKeying';
 import {getContainDrawRect, getFrameIndex} from '../lib/motion';
 
 type SequenceCanvasProps = {
@@ -20,25 +21,7 @@ function createKeyedFrameCanvas(image: HTMLImageElement, width: number, height: 
 
   keyedContext.drawImage(image, 0, 0, keyedCanvas.width, keyedCanvas.height);
   const imageData = keyedContext.getImageData(0, 0, keyedCanvas.width, keyedCanvas.height);
-  const {data} = imageData;
-
-  for (let index = 0; index < data.length; index += 4) {
-    const red = data[index];
-    const green = data[index + 1];
-    const blue = data[index + 2];
-    const maxChannel = Math.max(red, green, blue);
-
-    if (maxChannel <= 18) {
-      data[index + 3] = 0;
-      continue;
-    }
-
-    if (maxChannel < 42) {
-      const alpha = (maxChannel - 18) / (42 - 18);
-      data[index + 3] = Math.round(data[index + 3] * alpha);
-    }
-  }
-
+  keyConnectedNearBlackPixels(imageData.data, keyedCanvas.width, keyedCanvas.height);
   keyedContext.putImageData(imageData, 0, 0);
   return keyedCanvas;
 }
@@ -116,9 +99,9 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
 
     // Outside-only blur halo that helps the rectangular frame melt into the page background.
     context.save();
-    context.filter = 'blur(26px) brightness(0.76) saturate(0.82)';
-    context.globalAlpha = 0.42;
-    context.drawImage(keyedFrame, offsetX - 18, offsetY - 18, drawWidth + 36, drawHeight + 36);
+    context.filter = 'blur(24px) brightness(0.72) saturate(0.82)';
+    context.globalAlpha = 0.38;
+    context.drawImage(keyedFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
 
     // Cut the center back out so the blur only remains outside the image boundary.
     context.globalCompositeOperation = 'destination-out';
