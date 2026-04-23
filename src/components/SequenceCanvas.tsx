@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useRef} from 'react';
-import {getContainDrawRect, getCoverDrawRect, getFrameIndex} from '../lib/motion';
+import {getContainDrawRect, getFrameIndex} from '../lib/motion';
 
 type SequenceCanvasProps = {
   images: HTMLImageElement[];
@@ -32,62 +32,8 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, width, height);
 
-    const backgroundRect = getCoverDrawRect(image.naturalWidth, image.naturalHeight, width, height);
     context.save();
-    context.filter = 'blur(34px) brightness(0.32) saturate(0.8)';
-    context.drawImage(
-      image,
-      backgroundRect.offsetX - 56,
-      backgroundRect.offsetY - 56,
-      backgroundRect.drawWidth + 112,
-      backgroundRect.drawHeight + 112,
-    );
-    context.restore();
-
-    context.save();
-    context.fillStyle = 'rgba(6, 9, 13, 0.36)';
-    context.fillRect(0, 0, width, height);
-    context.restore();
-
-    // Ease the background filter near the subject so the sharp center image feels embedded.
-    context.save();
-    context.drawImage(
-      image,
-      backgroundRect.offsetX,
-      backgroundRect.offsetY,
-      backgroundRect.drawWidth,
-      backgroundRect.drawHeight,
-    );
-    const subjectReveal = context.createRadialGradient(
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.09,
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.5,
-    );
-    subjectReveal.addColorStop(0, 'rgba(255, 255, 255, 0.72)');
-    subjectReveal.addColorStop(0.42, 'rgba(255, 255, 255, 0.38)');
-    subjectReveal.addColorStop(0.78, 'rgba(255, 255, 255, 0.08)');
-    subjectReveal.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    context.globalCompositeOperation = 'destination-in';
-    context.fillStyle = subjectReveal;
-    context.fillRect(0, 0, width, height);
-    context.restore();
-
-    context.save();
-    const outerVeil = context.createRadialGradient(
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.16,
-      width * 0.5,
-      height * 0.52,
-      Math.min(width, height) * 0.72,
-    );
-    outerVeil.addColorStop(0, 'rgba(6, 9, 13, 0)');
-    outerVeil.addColorStop(0.5, 'rgba(6, 9, 13, 0.1)');
-    outerVeil.addColorStop(1, 'rgba(6, 9, 13, 0.42)');
-    context.fillStyle = outerVeil;
+    context.fillStyle = '#000000';
     context.fillRect(0, 0, width, height);
     context.restore();
 
@@ -99,12 +45,34 @@ export function SequenceCanvas({images, progress, ready}: SequenceCanvasProps) {
       0.7,
     );
 
+    // Soft blurred integration layer that gets denser near the center image.
+    context.save();
+    context.filter = 'blur(26px) brightness(1.02)';
+    context.globalAlpha = 0.42;
+    context.drawImage(image, offsetX - 12, offsetY - 12, drawWidth + 24, drawHeight + 24);
+    const centerFade = context.createRadialGradient(
+      width * 0.5,
+      height * 0.52,
+      Math.min(width, height) * 0.12,
+      width * 0.5,
+      height * 0.52,
+      Math.min(width, height) * 0.44,
+    );
+    centerFade.addColorStop(0, 'rgba(255,255,255,0.9)');
+    centerFade.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+    centerFade.addColorStop(0.75, 'rgba(255,255,255,0.12)');
+    centerFade.addColorStop(1, 'rgba(255,255,255,0)');
+    context.globalCompositeOperation = 'destination-in';
+    context.fillStyle = centerFade;
+    context.fillRect(0, 0, width, height);
+    context.restore();
+
     context.save();
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
-    context.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    context.shadowBlur = 28;
-    context.shadowOffsetY = 10;
+    context.shadowColor = 'rgba(0, 0, 0, 0.22)';
+    context.shadowBlur = 18;
+    context.shadowOffsetY = 6;
     context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
     context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
