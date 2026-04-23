@@ -92,6 +92,11 @@ describe('CinematicStage', () => {
 
     expect(screen.queryByLabelText('Loading introduction')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Website Creation')).toBeInTheDocument();
+    expect(screen.getByText('FRITZ')).toBeInTheDocument();
+    expect(screen.getByText('Brands built with')).toBeInTheDocument();
+    expect(screen.getByText('quiet')).toHaveClass('scene-title__quiet');
+    expect(screen.getByText('Enter FRITZ')).toBeInTheDocument();
+    expect(screen.getByText('Explore the paths')).toBeInTheDocument();
   });
 
   it('renders chapter italic lines on the opposite side and includes the placeholder TBA chapter', () => {
@@ -105,7 +110,7 @@ describe('CinematicStage', () => {
     const websiteQuote = within(websiteSection).getByText(
       'A website should not just present a business. It should elevate it.',
     );
-    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--start', 'scene-quote--center');
+    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end', 'scene-quote--center');
 
     const tbaSection = screen.getByLabelText('TBA');
     expect(within(tbaSection).getAllByText('TBA').length).toBeGreaterThanOrEqual(4);

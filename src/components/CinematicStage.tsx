@@ -13,7 +13,7 @@ const INTRO_TOTAL_MS = 3600;
 
 type Scene = {
   id: string;
-  navLabel: string;
+  navLabel?: string;
   eyebrow: string;
   title: string;
   italicLine?: string;
@@ -21,6 +21,39 @@ type Scene = {
   cta: string;
   href: string;
   align: 'start' | 'end';
+  kind: 'hero' | 'chapter';
+  secondaryCta?: string;
+  secondaryHref?: string;
+};
+
+function renderHeroTitle(title: string) {
+  const parts = title.match(/Brands built with\s+quiet\s+power\./i);
+
+  if (!parts) {
+    return title;
+  }
+
+  return (
+    <>
+      <span className="scene-title__line">Brands built with</span>
+      <span className="scene-title__line scene-title__quiet">quiet</span>
+      <span className="scene-title__line">power.</span>
+    </>
+  );
+}
+
+const heroScene: Scene = {
+  id: 'fritz-introduction',
+  eyebrow: 'FRITZ',
+  title: 'Brands built with quiet power.',
+  description:
+    'FRITZ creates digital experiences, brand worlds, and growth systems for businesses that want to look sharper, feel rarer, and scale with control.',
+  cta: 'Enter FRITZ',
+  href: '#join-the-adventure',
+  secondaryCta: 'Explore the paths',
+  secondaryHref: '#brand-design',
+  align: 'start',
+  kind: 'hero',
 };
 
 const joinScene: Scene = {
@@ -34,6 +67,7 @@ const joinScene: Scene = {
   cta: 'Join the Adventure',
   href: '#website-creation',
   align: 'start',
+  kind: 'chapter',
 };
 
 type IntroPhase = 'visible' | 'fading' | 'done';
@@ -48,7 +82,14 @@ export function CinematicStage() {
 
   const scenes = useMemo<Scene[]>(
     () => [
-      ...categories.map((category) => ({
+      {
+        ...categories[0],
+        title: categories[0].label,
+        href: `#${categories[0].id}`,
+        kind: 'chapter' as const,
+      },
+      heroScene,
+      ...categories.slice(1).map((category) => ({
         id: category.id,
         navLabel: category.navLabel,
         eyebrow: category.eyebrow,
@@ -58,6 +99,7 @@ export function CinematicStage() {
         cta: category.cta,
         href: `#${category.id}`,
         align: category.align,
+        kind: 'chapter' as const,
       })),
       joinScene,
     ],
@@ -66,7 +108,7 @@ export function CinematicStage() {
 
   const firstSceneId = scenes[0]?.id ?? 'website-creation';
   const navigationItems = useMemo(
-    () => scenes.map(({id, navLabel}) => ({id, label: navLabel})),
+    () => scenes.filter((scene) => scene.navLabel).map(({id, navLabel}) => ({id, label: navLabel!})),
     [scenes],
   );
   const stageStyle = useMemo(
@@ -245,33 +287,45 @@ export function CinematicStage() {
           const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
           const quoteAlign = getOppositeAlign(scene.align);
           const isLandingScene = index === 0;
+          const isHero = scene.kind === 'hero';
 
           return (
             <section
               key={scene.id}
               id={scene.id}
               ref={registerScene(scene.id)}
-              className={`scene scene--${scene.align} scene--chapter ${isLandingScene ? 'scene--landing' : ''} ${isVisible ? 'is-visible' : ''}`}
+              className={`scene scene--${scene.align} scene--${scene.kind} ${isLandingScene ? 'scene--landing' : ''} ${isVisible ? 'is-visible' : ''}`}
               data-active={activeSceneId === scene.id}
               aria-labelledby={`${scene.id}-title`}
             >
               {isLandingScene ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
-                {scene.italicLine ? (
+                {scene.italicLine && !isHero ? (
                   <div className={`scene-quote scene-quote--${quoteAlign} scene-quote--center`}>
                     <p className="scene-italic">{scene.italicLine}</p>
                   </div>
                 ) : null}
                 <div className={`scene-copy scene-copy--${scene.align}`}>
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
-                  <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
-                    {scene.title}
-                  </h2>
+                  {isHero ? (
+                    <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
+                      {renderHeroTitle(scene.title)}
+                    </h1>
+                  ) : (
+                    <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
+                      {scene.title}
+                    </h2>
+                  )}
                   <p className="scene-body">{scene.description}</p>
                   <div className="scene-actions">
                     <a className="button-link button-link--primary" href={scene.href}>
                       {scene.cta}
                     </a>
+                    {scene.secondaryCta && scene.secondaryHref ? (
+                      <a className="button-link button-link--secondary" href={scene.secondaryHref}>
+                        {scene.secondaryCta}
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               </div>
