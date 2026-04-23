@@ -230,22 +230,22 @@ export function CinematicStage() {
             >
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
+                {isHero && scene.preludeLines ? (
+                  <div className="scene-prelude scene-prelude--landing" aria-label="Arrival introduction">
+                    {scene.preludeLines.map((line) => (
+                      <p className="scene-italic" key={line}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
                 {!isHero && scene.italicLine ? (
-                  <div className={`scene-quote scene-quote--${quoteAlign}`}>
+                  <div className={`scene-quote scene-quote--${quoteAlign} scene-quote--center`}>
                     <p className="scene-italic">{scene.italicLine}</p>
                   </div>
                 ) : null}
                 <div className={`scene-copy scene-copy--${scene.align}`}>
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
-                  {scene.preludeLines ? (
-                    <div className="scene-prelude" aria-label="Arrival introduction">
-                      {scene.preludeLines.map((line) => (
-                        <p className="scene-italic" key={line}>
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  ) : null}
                   {isHero ? (
                     <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
                       {renderHeroTitle(scene.title)}

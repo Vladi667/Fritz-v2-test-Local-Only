@@ -32,6 +32,8 @@ describe('CinematicStage', () => {
   it('shows the poetic arrival copy in italic and the discovery progress indicator', () => {
     render(<CinematicStage />);
 
+    const landingPrelude = screen.getByLabelText('Arrival introduction');
+    expect(landingPrelude).toHaveClass('scene-prelude', 'scene-prelude--landing');
     expect(screen.getByText('Certain worlds do not present themselves.')).toBeInTheDocument();
     expect(screen.getByText('They are discovered in silence.')).toBeInTheDocument();
     expect(screen.getByText('Scroll to enter')).toBeInTheDocument();
@@ -56,12 +58,12 @@ describe('CinematicStage', () => {
     const brandQuote = within(brandSection).getByText('Before buying the offer, they buy the feeling.');
     expect(brandQuote).toBeInTheDocument();
     expect(brandQuote).toHaveClass('scene-italic');
-    expect(brandQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--start');
+    expect(brandQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--start', 'scene-quote--center');
 
     const websiteSection = screen.getByLabelText('Website Creation');
     const websiteQuote = within(websiteSection).getByText(
       'A website should not just present a business. It should elevate it.',
     );
-    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end');
+    expect(websiteQuote.closest('.scene-quote')).toHaveClass('scene-quote', 'scene-quote--end', 'scene-quote--center');
   });
 });
