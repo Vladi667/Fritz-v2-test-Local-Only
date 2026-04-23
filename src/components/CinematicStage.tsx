@@ -188,7 +188,7 @@ export function CinematicStage() {
       <header className="site-header">
         <div className="site-header__inner">
           <a className="brandmark" href="#arrival" aria-label="Go to FRITZ arrival">
-            FRITZ
+            <img className="brandmark__logo" src="/assets/brand/fritz-logo.png" alt="FRITZ" />
           </a>
           <nav className="site-nav" aria-label="Primary">
             {navigationItems.map((item) => (

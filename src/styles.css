@@ -89,10 +89,19 @@ button {
 }
 
 .brandmark {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.8rem;
   letter-spacing: 0.42em;
   text-decoration: none;
   color: var(--ink-faint);
+}
+
+.brandmark__logo {
+  display: block;
+  width: clamp(5.25rem, 10vw, 7.5rem);
+  height: auto;
+  opacity: 0.9;
 }
 
 .site-nav {
@@ -714,6 +723,10 @@ button {
 
   .brandmark {
     justify-self: start;
+  }
+
+  .brandmark__logo {
+    width: clamp(4.6rem, 24vw, 6rem);
   }
 
   .site-nav {
