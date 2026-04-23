@@ -3,6 +3,7 @@ import {
   buildFramePaths,
   clamp,
   getContainDrawRect,
+  getCoverDrawRect,
   getActiveBeat,
   getFrameIndex,
   quantizeProgress,
@@ -59,5 +60,14 @@ describe('motion helpers', () => {
     expect(rect.drawWidth).toBeCloseTo(394.875, 3);
     expect(rect.offsetX).toBeCloseTo((1440 - rect.drawWidth) / 2, 4);
     expect(rect.offsetY).toBeCloseTo((900 - rect.drawHeight) / 2, 4);
+  });
+
+  it('calculates a cover rect for using the image as the full background', () => {
+    const rect = getCoverDrawRect(720, 1280, 1440, 900);
+
+    expect(rect.drawWidth).toBeCloseTo(1440, 0);
+    expect(rect.drawHeight).toBeGreaterThan(900);
+    expect(rect.offsetX).toBeCloseTo(0, 4);
+    expect(rect.offsetY).toBeLessThan(0);
   });
 });

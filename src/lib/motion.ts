@@ -49,6 +49,28 @@ export function getContainDrawRect(
   };
 }
 
+export function getCoverDrawRect(sourceWidth: number, sourceHeight: number, targetWidth: number, targetHeight: number) {
+  const sourceRatio = sourceWidth / sourceHeight;
+  const targetRatio = targetWidth / targetHeight;
+  let drawWidth = targetWidth;
+  let drawHeight = targetHeight;
+
+  if (sourceRatio > targetRatio) {
+    drawHeight = targetHeight;
+    drawWidth = drawHeight * sourceRatio;
+  } else {
+    drawWidth = targetWidth;
+    drawHeight = drawWidth / sourceRatio;
+  }
+
+  return {
+    drawWidth,
+    drawHeight,
+    offsetX: (targetWidth - drawWidth) / 2,
+    offsetY: (targetHeight - drawHeight) / 2,
+  };
+}
+
 export function getActiveBeat(progress: number, beats: CategoryBeat[]) {
   return beats.find((beat) => progress >= beat.start && progress <= beat.end) ?? null;
 }

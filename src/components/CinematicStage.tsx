@@ -4,7 +4,6 @@ import {useImageSequence} from '../hooks/useImageSequence';
 import {useReducedMotion} from '../hooks/useReducedMotion';
 import {useScrollProgress} from '../hooks/useScrollProgress';
 import {getActiveBeat, quantizeProgress} from '../lib/motion';
-import {Atmosphere} from './Atmosphere';
 import {CategoryOverlay} from './CategoryOverlay';
 import {SequenceCanvas} from './SequenceCanvas';
 
@@ -22,12 +21,11 @@ export function CinematicStage() {
   return (
     <section className="sequence-section" ref={sectionRef}>
       <div className="sequence-sticky">
-        <Atmosphere progress={normalizedProgress} />
         <SequenceCanvas images={images} progress={normalizedProgress} ready={isReady} />
         <div className={`title-overlay ${introVisible ? 'is-visible' : ''}`}>
           <p className="overlay-kicker">Fritz v2</p>
-          <h1>Centered. Uncut. In frame.</h1>
-          <p className="overlay-copy">The action changes. The figure stays.</p>
+          <h1>One figure. One atmosphere.</h1>
+          <p className="overlay-copy">The image becomes the world. The motion stays precise.</p>
         </div>
         <div className="overlay-grid">
           {categories.map((beat) => (
@@ -36,11 +34,11 @@ export function CinematicStage() {
         </div>
         <div className={`end-overlay ${endingVisible ? 'is-visible' : ''}`}>
           <p className="overlay-kicker">Last beat</p>
-          <h2>The motion settles. The center holds.</h2>
+          <h2>Only the personage remains.</h2>
         </div>
         <div className="scroll-prompt" aria-hidden="true">
           <span />
-          <p>Scroll through the action</p>
+          <p>Scroll through the sequence</p>
         </div>
         <div className="sequence-progress" aria-hidden="true">
           <span style={{transform: `scaleX(${normalizedProgress || 0.001})`}} />

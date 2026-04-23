@@ -1,14 +1,12 @@
 :root {
   color-scheme: dark;
   font-family: Georgia, 'Times New Roman', serif;
-  --ink: #f4e8d7;
-  --ink-soft: rgba(244, 232, 215, 0.72);
-  --ink-faint: rgba(244, 232, 215, 0.46);
-  --line: rgba(244, 232, 215, 0.14);
-  --panel: rgba(13, 17, 22, 0.34);
-  --panel-strong: rgba(18, 24, 30, 0.62);
+  --ink: #f2e7d7;
+  --ink-soft: rgba(242, 231, 215, 0.74);
+  --ink-faint: rgba(242, 231, 215, 0.42);
+  --line: rgba(242, 231, 215, 0.12);
   --brass: #b58348;
-  --shadow: rgba(0, 0, 0, 0.32);
+  --shadow: rgba(0, 0, 0, 0.36);
 }
 
 * {
@@ -22,9 +20,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background:
-    radial-gradient(circle at 50% 28%, rgba(181, 131, 72, 0.16), transparent 28%),
-    linear-gradient(180deg, #070b10 0%, #0d1116 46%, #0a0f14 100%);
+  background: #070b10;
   color: var(--ink);
 }
 
@@ -60,7 +56,6 @@ a {
   isolation: isolate;
 }
 
-.atmosphere,
 .sequence-canvas-shell,
 .overlay-grid,
 .sequence-progress,
@@ -71,14 +66,8 @@ a {
   inset: 0;
 }
 
-.atmosphere {
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
 .sequence-canvas-shell {
-  z-index: 1;
+  z-index: 0;
   opacity: 0;
   transition: opacity 480ms ease;
 }
@@ -87,34 +76,12 @@ a {
   opacity: 1;
 }
 
-.subject-column {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: min(72vh, 800px);
-  aspect-ratio: 720 / 1280;
-  transform: translate(-50%, -50%);
-}
-
-.subject-aura {
-  position: absolute;
-  inset: 6%;
-  border-radius: 48% 48% 34% 34%;
-  background:
-    radial-gradient(circle at 50% 28%, rgba(181, 131, 72, 0.3), transparent 38%),
-    radial-gradient(circle at 50% 68%, rgba(245, 222, 192, 0.1), transparent 42%);
-  filter: blur(24px);
-}
-
 .sequence-canvas {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  border-radius: 999px;
-  box-shadow:
-    inset 0 0 0 1px rgba(244, 232, 215, 0.04),
-    0 0 0 1px rgba(244, 232, 215, 0.03);
 }
 
 .sequence-loading {
@@ -140,40 +107,36 @@ a {
 
 .category-overlay {
   align-self: center;
-  width: min(320px, 100%);
-  padding: 1.05rem 1rem 0.95rem;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  box-shadow: 0 26px 80px var(--shadow);
-  backdrop-filter: blur(12px);
+  width: min(260px, 100%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
   opacity: 0;
-  transform: translate3d(0, 24px, 0) scale(0.98);
+  transform: translate3d(0, 18px, 0);
   transition:
     opacity 420ms ease,
-    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 320ms ease,
-    background 320ms ease;
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .category-overlay.align-start {
-  grid-column: 1 / span 3;
+  grid-column: 2 / span 2;
 }
 
 .category-overlay.align-end {
-  grid-column: 10 / span 3;
+  grid-column: 10 / span 2;
   justify-self: end;
 }
 
 .category-overlay.is-active {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  border-color: rgba(181, 131, 72, 0.34);
-  background: var(--panel-strong);
+  transform: translate3d(0, 0, 0);
 }
 
 .category-overlay h3 {
   margin: 0.35rem 0 0.8rem;
-  font-size: clamp(1.7rem, 2.5vw, 2.5rem);
+  font-size: clamp(1.25rem, 1.7vw, 1.7rem);
   font-weight: 500;
   line-height: 0.96;
   letter-spacing: -0.04em;
@@ -195,8 +158,8 @@ a {
 
 .category-copy {
   margin: 0.95rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.82rem;
+  line-height: 1.55;
   color: var(--ink-soft);
 }
 
@@ -209,7 +172,7 @@ a {
 }
 
 .accent-flare {
-  box-shadow: 0 26px 100px rgba(177, 139, 88, 0.14);
+  text-shadow: 0 0 18px rgba(181, 131, 72, 0.18);
 }
 
 .accent-drift {
@@ -220,7 +183,7 @@ a {
   z-index: 3;
   inset: auto 1.5rem 1.25rem;
   height: 1px;
-  background: rgba(244, 232, 215, 0.08);
+  background: rgba(242, 231, 215, 0.08);
   overflow: hidden;
 }
 
@@ -238,7 +201,7 @@ a {
   display: grid;
   align-content: start;
   gap: 1rem;
-  padding: clamp(1.4rem, 4vw, 3.5rem);
+  padding: clamp(1.3rem, 3.2vw, 3rem);
   opacity: 0;
   transition: opacity 380ms ease;
   pointer-events: none;
@@ -264,7 +227,7 @@ a {
 .end-overlay h2 {
   margin: 0;
   max-width: 7ch;
-  font-size: clamp(2rem, 4.5vw, 4.1rem);
+  font-size: clamp(1.7rem, 3.6vw, 3.4rem);
   line-height: 0.92;
   letter-spacing: -0.04em;
   font-weight: 500;
@@ -281,8 +244,8 @@ a {
 .overlay-copy {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 18rem;
-  font-size: 0.88rem;
+  max-width: 16rem;
+  font-size: 0.8rem;
   line-height: 1.5;
   color: var(--ink-soft);
 }
@@ -323,10 +286,6 @@ a {
   .category-overlay.align-end {
     grid-column: 1 / -1;
     justify-self: stretch;
-  }
-
-  .subject-column {
-    height: min(62vh, 620px);
   }
 
   .sequence-section {
