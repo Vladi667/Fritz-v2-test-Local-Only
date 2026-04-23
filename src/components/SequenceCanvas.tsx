@@ -8,6 +8,41 @@ type SequenceCanvasProps = {
   subjectScale?: number;
 };
 
+function createKeyedFrameCanvas(image: HTMLImageElement, width: number, height: number) {
+  const keyedCanvas = document.createElement('canvas');
+  keyedCanvas.width = Math.max(1, Math.round(width));
+  keyedCanvas.height = Math.max(1, Math.round(height));
+
+  const keyedContext = keyedCanvas.getContext('2d', {willReadFrequently: true});
+  if (!keyedContext) {
+    return keyedCanvas;
+  }
+
+  keyedContext.drawImage(image, 0, 0, keyedCanvas.width, keyedCanvas.height);
+  const imageData = keyedContext.getImageData(0, 0, keyedCanvas.width, keyedCanvas.height);
+  const {data} = imageData;
+
+  for (let index = 0; index < data.length; index += 4) {
+    const red = data[index];
+    const green = data[index + 1];
+    const blue = data[index + 2];
+    const maxChannel = Math.max(red, green, blue);
+
+    if (maxChannel <= 18) {
+      data[index + 3] = 0;
+      continue;
+    }
+
+    if (maxChannel < 42) {
+      const alpha = (maxChannel - 18) / (42 - 18);
+      data[index + 3] = Math.round(data[index + 3] * alpha);
+    }
+  }
+
+  keyedContext.putImageData(imageData, 0, 0);
+  return keyedCanvas;
+}
+
 function paintWatermarkCleanup(
   context: CanvasRenderingContext2D,
   x: number,
@@ -77,12 +112,13 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
       height,
       subjectScale,
     );
+    const keyedFrame = createKeyedFrameCanvas(image, drawWidth, drawHeight);
 
     // Outside-only blur halo that helps the rectangular frame melt into the page background.
     context.save();
-    context.filter = 'blur(32px) brightness(0.92) saturate(0.9)';
-    context.globalAlpha = 0.5;
-    context.drawImage(image, offsetX - 22, offsetY - 22, drawWidth + 44, drawHeight + 44);
+    context.filter = 'blur(26px) brightness(0.76) saturate(0.82)';
+    context.globalAlpha = 0.42;
+    context.drawImage(keyedFrame, offsetX - 18, offsetY - 18, drawWidth + 36, drawHeight + 36);
 
     // Cut the center back out so the blur only remains outside the image boundary.
     context.globalCompositeOperation = 'destination-out';
@@ -97,7 +133,7 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
     context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
-    context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+    context.drawImage(keyedFrame, offsetX, offsetY, drawWidth, drawHeight);
     paintWatermarkCleanup(context, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
   }, [frameIndex, images, subjectScale]);

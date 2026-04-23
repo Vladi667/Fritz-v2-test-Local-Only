@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState, type CSSProperties} from 'react';
 import {categories} from '../data/categories';
 import {useImageSequence} from '../hooks/useImageSequence';
 import {useReducedMotion} from '../hooks/useReducedMotion';
@@ -96,6 +96,21 @@ export function CinematicStage() {
     () => scenes.map(({id, navLabel}) => ({id, label: navLabel})),
     [scenes],
   );
+  const arrivalProgress = Math.min(Math.max(normalizedProgress / 0.14, 0), 1);
+  const arrivalOpacity = 1 - arrivalProgress;
+  const heroPresence = Math.min(Math.max((normalizedProgress - 0.035) / 0.16, 0), 1);
+  const stageStyle = useMemo(
+    () =>
+      ({
+        '--backdrop-scale': `${(1 + normalizedProgress * 0.055).toFixed(4)}`,
+        '--backdrop-shift-y': `${(normalizedProgress * -24).toFixed(2)}px`,
+        '--backdrop-veil-opacity': `${(0.9 + normalizedProgress * 0.08).toFixed(3)}`,
+        '--backdrop-vignette-opacity': `${(0.86 + normalizedProgress * 0.12).toFixed(3)}`,
+        '--arrival-progress': `${arrivalProgress.toFixed(4)}`,
+        '--hero-presence': `${heroPresence.toFixed(4)}`,
+      }) as CSSProperties,
+    [arrivalProgress, heroPresence, normalizedProgress],
+  );
 
   const [revealedScenes, setRevealedScenes] = useState<Record<string, boolean>>({arrival: true});
   const [activeSceneId, setActiveSceneId] = useState<string>('arrival');
@@ -190,7 +205,7 @@ export function CinematicStage() {
         </div>
       </header>
 
-      <div className="story-viewport" ref={storyRef}>
+      <div className="story-viewport" data-testid="story-viewport" ref={storyRef} style={stageStyle}>
         <div className="story-stage" aria-hidden="true">
           <div className="story-stage__backdrop" data-testid="story-stage-backdrop" />
           <div
@@ -206,7 +221,15 @@ export function CinematicStage() {
           <div className="story-stage__vignette" />
           <div className="story-stage__shadow" />
         </div>
-        <div className="arrival-overlay arrival-overlay--visible" aria-label="Arrival introduction">
+        <div
+          className="arrival-overlay arrival-overlay--visible"
+          aria-label="Arrival introduction"
+          style={{
+            opacity: arrivalOpacity,
+            transform: `translate3d(0, ${arrivalProgress * 26}px, 0)`,
+            filter: `blur(${arrivalProgress * 10}px)`,
+          }}
+        >
           <div className="arrival-overlay__inner">
             <p className="scene-italic scene-prelude__line scene-prelude__line--left">
               {scenes[0].preludeLines?.[0]}
@@ -214,7 +237,7 @@ export function CinematicStage() {
             <p className="scene-italic scene-prelude__line scene-prelude__line--right">
               {scenes[0].preludeLines?.[1]}
             </p>
-            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact">
+            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact scene-scroll-hint--arrival">
               {scenes[0].scrollHint}
             </p>
           </div>
@@ -244,6 +267,7 @@ export function CinematicStage() {
               id={scene.id}
               ref={registerScene(scene.id)}
               className={`scene scene--${scene.align} scene--${scene.kind} ${isVisible ? 'is-visible' : ''}`}
+              data-active={activeSceneId === scene.id}
               aria-labelledby={`${scene.id}-title`}
             >
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
@@ -253,7 +277,18 @@ export function CinematicStage() {
                     <p className="scene-italic">{scene.italicLine}</p>
                   </div>
                 ) : null}
-                <div className={`scene-copy scene-copy--${scene.align}`}>
+                <div
+                  className={`scene-copy scene-copy--${scene.align}`}
+                  style={
+                    isHero
+                      ? {
+                          opacity: `${Math.max(heroPresence, 0.18)}`,
+                          transform: `translate3d(0, ${(1 - heroPresence) * 24}px, 0)`,
+                          filter: `blur(${(1 - heroPresence) * 7}px)`,
+                        }
+                      : undefined
+                  }
+                >
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
                   {isHero ? (
                     <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">

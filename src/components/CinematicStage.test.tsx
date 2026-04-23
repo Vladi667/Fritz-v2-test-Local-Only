@@ -17,7 +17,7 @@ vi.mock('../hooks/useImageSequence', () => ({
 }));
 
 vi.mock('../hooks/useScrollProgress', () => ({
-  useScrollProgress: () => 0,
+  useScrollProgress: vi.fn(() => 0),
 }));
 
 vi.mock('../hooks/useReducedMotion', () => ({
@@ -29,9 +29,18 @@ vi.mock('./SequenceCanvas', () => ({
 }));
 
 describe('CinematicStage', () => {
+  afterEach(async () => {
+    const {useScrollProgress} = await import('../hooks/useScrollProgress');
+    vi.mocked(useScrollProgress).mockReturnValue(0);
+  });
+
   it('shows the poetic arrival copy in italic and the discovery progress indicator', () => {
     render(<CinematicStage />);
 
+    expect(screen.getByTestId('story-viewport')).toHaveStyle({
+      '--backdrop-scale': '1.0000',
+      '--backdrop-shift-y': '0.00px',
+    });
     expect(screen.getByTestId('story-stage-backdrop')).toHaveClass('story-stage__backdrop');
     expect(screen.getByTestId('story-stage-backdrop-veil')).toHaveClass(
       'story-stage__backdrop',
@@ -45,7 +54,23 @@ describe('CinematicStage', () => {
     expect(rightLine).toHaveClass('scene-italic', 'scene-prelude__line', 'scene-prelude__line--right');
     const landingScrollHint = within(landingPrelude).getByText('Scroll to enter');
     expect(landingScrollHint).toHaveClass('scene-scroll-hint', 'scene-scroll-hint--landing', 'scene-scroll-hint--compact');
+    expect(landingScrollHint).toHaveClass('scene-scroll-hint--arrival');
     expect(screen.getByLabelText('Discovery progress')).toBeInTheDocument();
+  });
+
+  it('fades the arrival overlay away as scroll progress increases', async () => {
+    const {useScrollProgress} = await import('../hooks/useScrollProgress');
+    vi.mocked(useScrollProgress).mockReturnValue(0.28);
+
+    render(<CinematicStage />);
+
+    expect(screen.getByLabelText('Arrival introduction')).toHaveStyle({
+      opacity: '0',
+    });
+    expect(screen.getByTestId('story-viewport')).toHaveStyle({
+      '--backdrop-scale': '1.0154',
+      '--backdrop-shift-y': '-6.72px',
+    });
   });
 
   it('treats quiet as a distinct cinematic line in the hero title', () => {
