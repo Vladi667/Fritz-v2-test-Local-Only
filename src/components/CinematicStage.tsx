@@ -6,11 +6,6 @@ import {useScrollProgress} from '../hooks/useScrollProgress';
 import {quantizeProgress} from '../lib/motion';
 import {SequenceCanvas} from './SequenceCanvas';
 
-const INTRO_LINES = ['Certain worlds do not present themselves.', 'They are discovered in silence.'];
-const INTRO_SCROLL_HINT = 'Scroll to enter';
-const INTRO_FADE_DELAY_MS = 2500;
-const INTRO_TOTAL_MS = 3600;
-
 type Scene = {
   id: string;
   navLabel?: string;
@@ -70,8 +65,6 @@ const joinScene: Scene = {
   kind: 'chapter',
 };
 
-type IntroPhase = 'visible' | 'fading' | 'done';
-
 export function CinematicStage() {
   const storyRef = useRef<HTMLDivElement>(null);
   const sceneRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -118,27 +111,6 @@ export function CinematicStage() {
 
   const [revealedScenes, setRevealedScenes] = useState<Record<string, boolean>>(() => ({[firstSceneId]: true}));
   const [activeSceneId, setActiveSceneId] = useState<string>(firstSceneId);
-  const [introPhase, setIntroPhase] = useState<IntroPhase>(prefersReducedMotion ? 'done' : 'visible');
-
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setIntroPhase('done');
-      return;
-    }
-
-    const fadeTimer = window.setTimeout(() => {
-      setIntroPhase('fading');
-    }, INTRO_FADE_DELAY_MS);
-
-    const doneTimer = window.setTimeout(() => {
-      setIntroPhase('done');
-    }, INTRO_TOTAL_MS);
-
-    return () => {
-      window.clearTimeout(fadeTimer);
-      window.clearTimeout(doneTimer);
-    };
-  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const nodes = scenes
@@ -209,7 +181,7 @@ export function CinematicStage() {
   const getOppositeAlign = (align: Scene['align']) => (align === 'start' ? 'end' : 'start');
 
   return (
-    <div className={`fritz-home ${introPhase !== 'done' ? 'fritz-home--intro' : ''}`}>
+    <div className="fritz-home">
       <header className="site-header">
         <div className="site-header__inner">
           <a className="brandmark" href={`#${firstSceneId}`} aria-label="Go to FRITZ homepage">
@@ -231,23 +203,6 @@ export function CinematicStage() {
           </div>
         </div>
       </header>
-
-      {introPhase !== 'done' ? (
-        <div
-          className={`loading-intro ${introPhase === 'fading' ? 'loading-intro--fading' : 'loading-intro--visible'}`}
-          aria-label="Loading introduction"
-        >
-          <div className="loading-intro__inner">
-            <div className="loading-intro__sequence" aria-hidden="true">
-              <p className="scene-italic loading-intro__line loading-intro__line--first">{INTRO_LINES[0]}</p>
-              <p className="scene-italic loading-intro__line loading-intro__line--second">{INTRO_LINES[1]}</p>
-            </div>
-            <p className="scene-scroll-hint scene-scroll-hint--landing scene-scroll-hint--compact loading-intro__hint">
-              {INTRO_SCROLL_HINT}
-            </p>
-          </div>
-        </div>
-      ) : null}
 
       <div className="story-viewport" data-testid="story-viewport" ref={storyRef} style={stageStyle}>
         <div className="story-stage" aria-hidden="true">

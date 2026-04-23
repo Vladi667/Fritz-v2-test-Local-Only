@@ -1,4 +1,4 @@
-import {act, render, screen, within} from '@testing-library/react';
+import {render, screen, within} from '@testing-library/react';
 import {CinematicStage} from './CinematicStage';
 
 class MockIntersectionObserver {
@@ -29,20 +29,12 @@ vi.mock('./SequenceCanvas', () => ({
 }));
 
 describe('CinematicStage', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
   afterEach(async () => {
     const {useScrollProgress} = await import('../hooks/useScrollProgress');
     vi.mocked(useScrollProgress).mockReturnValue(0);
-    act(() => {
-      vi.runOnlyPendingTimers();
-    });
-    vi.useRealTimers();
   });
 
-  it('opens with the cinematic loading intro before the homepage scenes', () => {
+  it('opens with the FRITZ hero as the first landing scene', () => {
     render(<CinematicStage />);
 
     expect(screen.getByTestId('story-viewport')).toHaveStyle({
@@ -55,24 +47,6 @@ describe('CinematicStage', () => {
       'story-stage__backdrop--veil',
     );
 
-    const loadingIntro = screen.getByLabelText('Loading introduction');
-    expect(within(loadingIntro).getByText('Certain worlds do not present themselves.')).toHaveClass(
-      'scene-italic',
-      'loading-intro__line',
-      'loading-intro__line--first',
-    );
-    expect(within(loadingIntro).getByText('They are discovered in silence.')).toHaveClass(
-      'scene-italic',
-      'loading-intro__line',
-      'loading-intro__line--second',
-    );
-    expect(within(loadingIntro).getByText('Scroll to enter')).toHaveClass(
-      'scene-scroll-hint',
-      'scene-scroll-hint--landing',
-      'scene-scroll-hint--compact',
-      'loading-intro__hint',
-    );
-
     const nav = screen.getByLabelText('Primary');
     expect(within(nav).queryByText('Arrival')).not.toBeInTheDocument();
     expect(within(nav).getByText('Website Creation')).toBeInTheDocument();
@@ -81,16 +55,6 @@ describe('CinematicStage', () => {
 
     const heroSection = screen.getByRole('heading', {name: /brands built with quiet power\./i}).closest('section');
     expect(heroSection).toHaveClass('scene--landing', 'is-visible', 'scene--hero');
-  });
-
-  it('hands off from the loading intro to the homepage after the cinematic hold', () => {
-    render(<CinematicStage />);
-
-    act(() => {
-      vi.advanceTimersByTime(3700);
-    });
-
-    expect(screen.queryByLabelText('Loading introduction')).not.toBeInTheDocument();
     expect(screen.getByText('FRITZ')).toBeInTheDocument();
     expect(screen.getByText('Brands built with')).toBeInTheDocument();
     expect(screen.getByText('quiet')).toHaveClass('scene-title__quiet');
