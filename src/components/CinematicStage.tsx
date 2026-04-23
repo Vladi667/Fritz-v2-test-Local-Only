@@ -21,6 +21,22 @@ type Scene = {
   kind: 'hero' | 'chapter';
 };
 
+function renderHeroTitle(title: string) {
+  const parts = title.match(/Brands built with\s+quiet\s+power\./i);
+
+  if (!parts) {
+    return title;
+  }
+
+  return (
+    <>
+      <span className="scene-title__line">Brands built with</span>
+      <span className="scene-title__line scene-title__quiet">quiet</span>
+      <span className="scene-title__line">power.</span>
+    </>
+  );
+}
+
 const joinScene: Scene = {
   id: 'join-the-adventure',
   navLabel: 'Join the Adventure',
@@ -49,7 +65,7 @@ export function CinematicStage() {
         id: 'arrival',
         navLabel: 'Arrival',
         eyebrow: 'FRITZ',
-        preludeLines: ['Some worlds are not introduced.', 'They are discovered.'],
+        preludeLines: ['Certain worlds do not present themselves.', 'They are discovered in silence.'],
         scrollHint: 'Scroll to enter',
         title: 'Brands built with quiet power.',
         description:
@@ -150,6 +166,8 @@ export function CinematicStage() {
     sceneRefs.current[id] = node;
   };
 
+  const getOppositeAlign = (align: Scene['align']) => (align === 'start' ? 'end' : 'start');
+
   return (
     <div className="fritz-home">
       <header className="site-header">
@@ -198,6 +216,7 @@ export function CinematicStage() {
         {scenes.map((scene, index) => {
           const isVisible = revealedScenes[scene.id] ?? prefersReducedMotion;
           const isHero = scene.kind === 'hero';
+          const quoteAlign = getOppositeAlign(scene.align);
           const secondaryHref = isHero ? '#paths' : '#join-the-adventure';
           const secondaryLabel = isHero ? 'Explore the paths' : undefined;
 
@@ -211,25 +230,31 @@ export function CinematicStage() {
             >
               {index === 1 ? <div id="paths" className="scene-anchor" aria-hidden="true" /> : null}
               <div className="scene-grid">
+                {!isHero && scene.italicLine ? (
+                  <div className={`scene-quote scene-quote--${quoteAlign}`}>
+                    <p className="scene-italic">{scene.italicLine}</p>
+                  </div>
+                ) : null}
                 <div className={`scene-copy scene-copy--${scene.align}`}>
                   <p className="scene-eyebrow">{scene.eyebrow}</p>
                   {scene.preludeLines ? (
                     <div className="scene-prelude" aria-label="Arrival introduction">
                       {scene.preludeLines.map((line) => (
-                        <p key={line}>{line}</p>
+                        <p className="scene-italic" key={line}>
+                          {line}
+                        </p>
                       ))}
                     </div>
                   ) : null}
                   {isHero ? (
                     <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
-                      {scene.title}
+                      {renderHeroTitle(scene.title)}
                     </h1>
                   ) : (
                     <h2 id={`${scene.id}-title`} className="scene-title scene-title--chapter">
                       {scene.title}
                     </h2>
                   )}
-                  {scene.italicLine ? <p className="scene-italic">{scene.italicLine}</p> : null}
                   {scene.scrollHint ? <p className="scene-scroll-hint">{scene.scrollHint}</p> : null}
                   <p className="scene-body">{scene.description}</p>
                   <div className="scene-actions">

@@ -20,7 +20,7 @@ export const categories: CategoryBeat[] = [
     label: 'Brand Design',
     navLabel: 'Brand Design',
     eyebrow: 'Brand Design',
-    italicLine: 'Before people buy the offer, they buy the feeling around it.',
+    italicLine: 'Before buying the offer, they buy the feeling.',
     description:
       'Identity, direction, and creative built to make a brand feel more coherent, more memorable, and more valuable.',
     cta: 'Discover Brand Design',
