@@ -246,15 +246,14 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
       const current = displayProgressRef.current;
       const delta = target - current;
 
-      if (Math.abs(delta) < 0.003) {
+      if (Math.abs(delta) < 0.0015) {
         displayProgressRef.current = target;
         draw();
-        // Settled — stop the loop
         isAnimatingRef.current = false;
         return;
       }
 
-      displayProgressRef.current = current + delta * 0.16;
+      displayProgressRef.current = current + delta * 0.32;
       draw();
       rafIdRef.current = window.requestAnimationFrame(tick);
     };
