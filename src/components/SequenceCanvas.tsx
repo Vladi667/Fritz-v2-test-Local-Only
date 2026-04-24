@@ -70,10 +70,8 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
   // Cached context — getContext is cheap but caching is cleaner
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  // All animation state lives in refs — no React renders during animation
+  // Progress mirrored to ref so draw closure stays current
   const displayProgressRef = useRef(progress);
-  const targetProgressRef = useRef(progress);
-  const isAnimatingRef = useRef(false);
   const rafIdRef = useRef(0);
 
   // Props mirrored to refs so the RAF closure doesn't go stale
@@ -237,43 +235,12 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.restore();
   }, []);
 
-  const startAnimating = useCallback(() => {
-    if (isAnimatingRef.current) return;
-    isAnimatingRef.current = true;
-
-    const tick = () => {
-      const target = targetProgressRef.current;
-      const current = displayProgressRef.current;
-      const delta = target - current;
-
-      if (Math.abs(delta) < 0.0015) {
-        displayProgressRef.current = target;
-        draw();
-        isAnimatingRef.current = false;
-        return;
-      }
-
-      displayProgressRef.current = current + delta * 0.32;
-      draw();
-      rafIdRef.current = window.requestAnimationFrame(tick);
-    };
-
-    rafIdRef.current = window.requestAnimationFrame(tick);
-  }, [draw]);
-
-  // When progress prop changes, update target and kick off animation if not running
+  // Scroll drives frames directly — no lerp, no trailing motion
   useEffect(() => {
-    targetProgressRef.current = progress;
-
-    if (prefersReducedMotion) {
-      // Snap immediately, no lerp
-      displayProgressRef.current = progress;
-      draw();
-      return;
-    }
-
-    startAnimating();
-  }, [progress, prefersReducedMotion, draw, startAnimating]);
+    displayProgressRef.current = progress;
+    cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = requestAnimationFrame(draw);
+  }, [progress, draw]);
 
   // Redraw when images array changes (progressive loading batches arrive)
   useEffect(() => {

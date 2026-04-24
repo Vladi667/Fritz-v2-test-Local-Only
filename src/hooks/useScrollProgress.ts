@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {clamp} from '../lib/motion';
 
-const DEAD_BAND = 0.006;
+const DEAD_BAND = 0.003;
 
 export function useScrollProgress(target: React.RefObject<HTMLElement>) {
   const [progress, setProgress] = useState(0);
