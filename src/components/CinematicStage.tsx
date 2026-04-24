@@ -40,11 +40,15 @@ function renderHeroTitle() {
 }
 
 function renderChapterTitle(title: string) {
-  return title.split(' ').map((word, i) => (
-    <span key={i} className="scene-title__word" style={{'--word-index': i} as CSSProperties}>
-      {word}{' '}
+  return (
+    <span className="scene-title__words">
+      {title.split(' ').map((word, i) => (
+        <span key={i} className="scene-title__word" style={{'--word-index': i} as CSSProperties}>
+          {word}
+        </span>
+      ))}
     </span>
-  ));
+  );
 }
 
 const heroScene: Scene = {
@@ -70,7 +74,7 @@ const joinScene: Scene = {
   ghostWord: 'TOGETHER',
   verse: ['Some arrive.', 'Fewer', 'remain.'],
   description:
-    'FRITZ brings together UX/UI, cinematic direction, Superpower, and Remotion to shape digital experiences that feel less like marketing and more like gravity.',
+    'The brands we work with share one thing — they are ready. Ready to look sharper, feel rarer, and grow with intention. If that sounds familiar, the door is open.',
   cta: 'Join the Adventure',
   href: '#website-creation',
   align: 'end',
@@ -316,7 +320,7 @@ export function CinematicStage() {
                       {numeral}
                     </span>
                   ) : null}
-                  <p className="scene-eyebrow">{scene.eyebrow}</p>
+                  {!isHero ? <p className="scene-eyebrow">{scene.eyebrow}</p> : null}
                   {isHero ? (
                     <h1 id={`${scene.id}-title`} className="scene-title scene-title--hero">
                       {renderHeroTitle()}

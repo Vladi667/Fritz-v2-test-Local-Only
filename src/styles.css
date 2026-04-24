@@ -810,8 +810,14 @@ button {
 }
 
 /* Word-by-word chapter title reveal */
+.scene-title__words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28em;
+}
+
 .scene-title__word {
-  display: inline-block;
+  display: block;
   opacity: 0;
   transform: translateY(12px);
   transition:
