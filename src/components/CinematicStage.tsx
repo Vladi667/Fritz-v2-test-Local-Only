@@ -233,6 +233,9 @@ export function CinematicStage() {
               ))}
             </nav>
           </div>
+          <p className="site-header__meta" aria-label="Studio location">
+            46° 28′ N · 7° 15′ E <span className="site-header__meta-dot">•</span> <em>Gstaad</em> <span className="site-header__meta-dot">•</span> Est. MMXXI
+          </p>
         </div>
       </header>
 

@@ -116,11 +116,35 @@ button {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: clamp(0.9rem, 1.6vw, 1.4rem);
   width: var(--content-width);
   margin: 0 auto;
+}
+
+.site-header__meta {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.64rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.site-header__meta em {
+  font-style: italic;
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.site-header__meta-dot {
+  opacity: 0.38;
+  margin: 0 0.3em;
 }
 
 .brandmark,
@@ -239,6 +263,8 @@ button {
   height: 100vh;
   overflow: hidden;
   pointer-events: none;
+  /* Collapse flow height so scene 1 starts at top of viewport, not below it */
+  margin-bottom: -100vh;
 }
 
 /* Refined progress bar — 1px track + solid accent fill */
@@ -481,10 +507,14 @@ button {
   pointer-events: none;
 }
 
-.scene-verse--start,
+.scene-verse--start {
+  grid-column: 1 / span 4;
+  text-align: left;
+}
+
 .scene-verse--end {
-  grid-column: 5 / span 4;
-  text-align: center;
+  grid-column: 9 / span 4;
+  text-align: right;
 }
 
 .scene-verse__line {
@@ -1166,10 +1196,14 @@ button {
     grid-column: 8 / span 5;
   }
 
-  .scene-verse--start,
+  .scene-verse--start {
+    grid-column: 1 / span 4;
+    text-align: left;
+  }
+
   .scene-verse--end {
-    grid-column: 5 / span 4;
-    text-align: center;
+    grid-column: 9 / span 4;
+    text-align: right;
   }
 
   .scene-ghost-word span {
@@ -1197,6 +1231,10 @@ button {
   .site-header__inner {
     grid-template-columns: 1fr;
     gap: 0.85rem;
+  }
+
+  .site-header__meta {
+    display: none;
   }
 
   .brandmark {
