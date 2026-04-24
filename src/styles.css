@@ -387,6 +387,9 @@ button {
   display: block;
   width: 100%;
   height: 100%;
+  /* GPU-accelerated shadow follows subject alpha — replaces expensive canvas shadowBlur */
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.22));
+  will-change: contents;
 }
 
 /* Loading em-dash — silence over explanation */
@@ -563,6 +566,11 @@ button {
 .scene--landing.scene--hero .scene-copy {
   padding-top: clamp(0.85rem, 2.2vh, 1.65rem);
   max-width: clamp(20rem, 30vw, 25rem);
+  /* Hero is always the first thing seen — no fade-in delay */
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
 }
 
 .scene--landing.scene--hero .scene-title--hero {

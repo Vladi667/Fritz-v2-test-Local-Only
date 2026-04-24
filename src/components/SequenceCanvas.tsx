@@ -67,6 +67,8 @@ function paintWatermarkCleanup(
 export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: SequenceCanvasProps) {
   const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Cached context — getContext is cheap but caching is cleaner
+  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
 
   // All animation state lives in refs — no React renders during animation
   const displayProgressRef = useRef(progress);
@@ -126,7 +128,10 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     const baseImage = imgs[frameSample.baseIndex];
     if (!baseImage || baseImage.naturalWidth === 0 || baseImage.naturalHeight === 0) return;
 
-    const context = canvas.getContext('2d');
+    if (!contextRef.current) {
+      contextRef.current = canvas.getContext('2d');
+    }
+    const context = contextRef.current;
     if (!context) return;
 
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -144,13 +149,18 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
 
     context.clearRect(0, 0, cssW, cssH);
 
-    const {drawWidth, drawHeight, offsetX, offsetY} = getContainDrawRect(
+    const rect = getContainDrawRect(
       baseImage.naturalWidth,
       baseImage.naturalHeight,
       cssW,
       cssH,
       subjectScaleRef.current,
     );
+    // Round to integer pixels — eliminates sub-pixel fringing on subject edges
+    const drawWidth = Math.round(rect.drawWidth);
+    const drawHeight = Math.round(rect.drawHeight);
+    const offsetX = Math.round(rect.offsetX);
+    const offsetY = Math.round(rect.offsetY);
 
     const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
     if (cacheDimsRef.current !== cacheKey) {
@@ -190,31 +200,29 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
 
     const reducedMotion = prefersReducedMotionRef.current;
     const easedMix = frameSample.mix * frameSample.mix * (3 - 2 * frameSample.mix);
-    const blendAlpha = reducedMotion ? 0 : easedMix * 0.38;
+    const blendAlpha = reducedMotion ? 0 : easedMix * 0.22;
     const keyedNextFrame =
       blendAlpha > 0.001 && frameSample.nextIndex !== frameSample.baseIndex
         ? getKeyedFrame(frameSample.nextIndex)
         : null;
 
-    // Outer bloom — softer blur, low opacity so subject melts into scene
+    // Outer bloom — 8px blur (2× cheaper than 16px), low opacity
     context.save();
-    context.filter = 'blur(16px) brightness(0.58) saturate(0.62)';
-    context.globalAlpha = 0.22;
-    context.drawImage(keyedBaseFrame, offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
+    context.filter = 'blur(8px) brightness(0.58) saturate(0.62)';
+    context.globalAlpha = 0.18;
+    context.drawImage(keyedBaseFrame, offsetX - 10, offsetY - 10, drawWidth + 20, drawHeight + 20);
     if (keyedNextFrame && blendAlpha > 0) {
       context.globalAlpha = blendAlpha * 0.9;
-      context.drawImage(keyedNextFrame, offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
+      context.drawImage(keyedNextFrame, offsetX - 10, offsetY - 10, drawWidth + 20, drawHeight + 20);
     }
-    // Cut center out so bloom only exists outside image boundary
+    // Cut center so bloom only exists outside image boundary
     context.globalCompositeOperation = 'destination-out';
     context.fillStyle = '#000';
     context.fillRect(offsetX + 2, offsetY + 2, drawWidth - 4, drawHeight - 4);
     context.restore();
 
+    // Shadow moved to CSS drop-shadow (GPU path) — no canvas shadowBlur here
     context.save();
-    context.shadowColor = 'rgba(0, 0, 0, 0.18)';
-    context.shadowBlur = 14;
-    context.shadowOffsetY = 4;
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
     context.filter = 'brightness(1.05) contrast(1.03) saturate(1.02)';
@@ -238,7 +246,7 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
       const current = displayProgressRef.current;
       const delta = target - current;
 
-      if (Math.abs(delta) < 0.0008) {
+      if (Math.abs(delta) < 0.003) {
         displayProgressRef.current = target;
         draw();
         // Settled — stop the loop
@@ -246,7 +254,7 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
         return;
       }
 
-      displayProgressRef.current = current + delta * 0.14;
+      displayProgressRef.current = current + delta * 0.16;
       draw();
       rafIdRef.current = window.requestAnimationFrame(tick);
     };
