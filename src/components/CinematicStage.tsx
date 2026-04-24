@@ -214,6 +214,11 @@ export function CinematicStage() {
       {/* Chapter sweep line */}
       <div className={`chapter-sweep${sweeping ? ' is-sweeping' : ''}`} aria-hidden="true" />
 
+      {/* Hero-only location tag — fades out when scrolling past first scene */}
+      <p className={`hero-meta${activeSceneId === firstSceneId ? ' is-visible' : ''}`} aria-label="Studio location">
+        46° 28′ N · 7° 15′ E <span className="hero-meta__dot">•</span> <em>Gstaad</em> <span className="hero-meta__dot">•</span> Est. MMXXI
+      </p>
+
       <header className="site-header">
         <div className="site-header__inner">
           <a className="brandmark" href={`#${firstSceneId}`} aria-label="Go to FRITZ homepage">
@@ -233,9 +238,6 @@ export function CinematicStage() {
               ))}
             </nav>
           </div>
-          <p className="site-header__meta" aria-label="Studio location">
-            46° 28′ N · 7° 15′ E <span className="site-header__meta-dot">•</span> <em>Gstaad</em> <span className="site-header__meta-dot">•</span> Est. MMXXI
-          </p>
         </div>
       </header>
 

@@ -15,7 +15,7 @@ export const categories: CategoryBeat[] = [
     start: 0,
     end: 0.22,
     accent: 'glide',
-    align: 'start',
+    align: 'end',
   },
   {
     id: 'brand-design',
@@ -47,7 +47,7 @@ export const categories: CategoryBeat[] = [
     start: 0.48,
     end: 0.7,
     accent: 'flare',
-    align: 'start',
+    align: 'end',
   },
   {
     id: 'tba',
