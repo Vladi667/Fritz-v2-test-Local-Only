@@ -478,14 +478,10 @@ button {
   pointer-events: none;
 }
 
-.scene-verse--start {
-  grid-column: 1 / span 3;
-  text-align: left;
-}
-
+.scene-verse--start,
 .scene-verse--end {
-  grid-column: 10 / span 3;
-  text-align: right;
+  grid-column: 5 / span 4;
+  text-align: center;
 }
 
 .scene-verse__line {
@@ -1162,12 +1158,10 @@ button {
     grid-column: 8 / span 5;
   }
 
-  .scene-verse--start {
-    grid-column: 1 / span 3;
-  }
-
+  .scene-verse--start,
   .scene-verse--end {
-    grid-column: 10 / span 3;
+    grid-column: 5 / span 4;
+    text-align: center;
   }
 
   .scene-ghost-word span {
