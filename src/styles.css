@@ -989,6 +989,28 @@ button {
 }
 
 /* Chapter sweep line — one pixel that crosses the screen on chapter change */
+.scroll-hint {
+  position: fixed;
+  bottom: clamp(2rem, 4vh, 2.8rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 500ms ease;
+}
+
+.scroll-hint.is-gone {
+  opacity: 0;
+}
+
 .chapter-sweep {
   position: fixed;
   top: 50%;

@@ -215,6 +215,11 @@ export function CinematicStage() {
 
   return (
     <div className="fritz-home" style={homeStyle}>
+      {/* Scroll hint — fades out after first scroll movement */}
+      <p className={`scroll-hint${normalizedProgress > 0.03 ? ' is-gone' : ''}`} aria-hidden="true">
+        scroll to discover
+      </p>
+
       {/* Chapter sweep line */}
       <div className={`chapter-sweep${sweeping ? ' is-sweeping' : ''}`} aria-hidden="true" />
 
