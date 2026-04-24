@@ -1,8 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {clamp} from '../lib/motion';
+
+const DEAD_BAND = 0.0005;
 
 export function useScrollProgress(target: React.RefObject<HTMLElement>) {
   const [progress, setProgress] = useState(0);
+  const lastProgressRef = useRef(0);
 
   useEffect(() => {
     let frame = 0;
@@ -16,7 +19,11 @@ export function useScrollProgress(target: React.RefObject<HTMLElement>) {
       const rect = node.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const travelled = Math.min(Math.max(-rect.top, 0), Math.max(total, 1));
-      setProgress(total <= 0 ? 0 : clamp(travelled / total));
+      const next = total <= 0 ? 0 : clamp(travelled / total);
+
+      if (Math.abs(next - lastProgressRef.current) < DEAD_BAND) return;
+      lastProgressRef.current = next;
+      setProgress(next);
     };
 
     const schedule = () => {

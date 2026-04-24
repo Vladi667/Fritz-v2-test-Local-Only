@@ -6,6 +6,8 @@ export type CategoryBeat = {
   navLabel: string;
   eyebrow: string;
   italicLine: string;
+  ghostWord?: string;
+  verse?: string[];
   description: string;
   cta: string;
   start: number;

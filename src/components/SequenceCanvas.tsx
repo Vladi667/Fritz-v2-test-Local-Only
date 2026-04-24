@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {keyConnectedNearBlackPixels} from '../lib/backgroundKeying';
 import {getContainDrawRect, getFrameSample} from '../lib/motion';
 import {useReducedMotion} from '../hooks/useReducedMotion';
@@ -67,129 +67,145 @@ function paintWatermarkCleanup(
 export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: SequenceCanvasProps) {
   const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // All animation state lives in refs — no React renders during animation
+  const displayProgressRef = useRef(progress);
   const targetProgressRef = useRef(progress);
-  const cacheDimensionsRef = useRef<string>('');
+  const isAnimatingRef = useRef(false);
+  const rafIdRef = useRef(0);
+
+  // Props mirrored to refs so the RAF closure doesn't go stale
+  const imagesRef = useRef(images);
+  const subjectScaleRef = useRef(subjectScale);
+  const prefersReducedMotionRef = useRef(prefersReducedMotion);
+
+  // Canvas dimension cache to avoid GPU texture reallocation every frame
+  const canvasDimsRef = useRef({cssW: 0, cssH: 0, ratio: 0});
+
+  // Keyed frame cache — keyed by frame index, cleared when draw dims change
   const keyedFrameCacheRef = useRef<Map<number, HTMLCanvasElement>>(new Map());
-  const [displayProgress, setDisplayProgress] = useState(progress);
-  const frameSample = useMemo(() => getFrameSample(displayProgress, images.length), [displayProgress, images.length]);
+  const cacheDimsRef = useRef('');
+
+  // Last drawn frame index — used to remap displayProgress when images.length grows
+  const lastFrameIndexRef = useRef(0);
+
+  // Entrance animation — only this uses React state (one-shot, fine)
+  const [entering, setEntering] = useState(false);
+  const wasReadyRef = useRef(false);
+
+  // Keep refs in sync with props
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
 
   useEffect(() => {
-    targetProgressRef.current = progress;
-    if (prefersReducedMotion) {
-      setDisplayProgress(progress);
+    subjectScaleRef.current = subjectScale;
+  }, [subjectScale]);
+
+  useEffect(() => {
+    prefersReducedMotionRef.current = prefersReducedMotion;
+  }, [prefersReducedMotion]);
+
+  // Entrance animation when frames first become ready
+  useEffect(() => {
+    if (ready && !wasReadyRef.current) {
+      wasReadyRef.current = true;
+      setEntering(true);
+      const t = setTimeout(() => setEntering(false), 1000);
+      return () => clearTimeout(t);
     }
-  }, [prefersReducedMotion, progress]);
+  }, [ready]);
 
-  useEffect(() => {
-    if (prefersReducedMotion || images.length === 0) {
-      return;
-    }
-
-    let rafId = 0;
-
-    const tick = () => {
-      setDisplayProgress((current) => {
-        const target = targetProgressRef.current;
-        const delta = target - current;
-
-        if (Math.abs(delta) < 0.0008) {
-          return target;
-        }
-
-        return current + delta * 0.14;
-      });
-
-      rafId = window.requestAnimationFrame(tick);
-    };
-
-    rafId = window.requestAnimationFrame(tick);
-
-    return () => {
-      window.cancelAnimationFrame(rafId);
-    };
-  }, [images.length, prefersReducedMotion]);
-
-  useEffect(() => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    const baseImage = images[frameSample.baseIndex];
-    if (!canvas || !baseImage || baseImage.naturalWidth === 0 || baseImage.naturalHeight === 0) {
-      return;
-    }
+    const imgs = imagesRef.current;
+    if (!canvas || imgs.length === 0) return;
+
+    const currentProgress = displayProgressRef.current;
+    const frameSample = getFrameSample(currentProgress, imgs.length);
+    const baseImage = imgs[frameSample.baseIndex];
+    if (!baseImage || baseImage.naturalWidth === 0 || baseImage.naturalHeight === 0) return;
 
     const context = canvas.getContext('2d');
-    if (!context) {
-      return;
-    }
+    if (!context) return;
 
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    const cssW = canvas.clientWidth;
+    const cssH = canvas.clientHeight;
 
-    canvas.width = Math.max(1, Math.floor(width * ratio));
-    canvas.height = Math.max(1, Math.floor(height * ratio));
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    context.clearRect(0, 0, width, height);
+    // Only reallocate GPU texture when dimensions actually change
+    const cached = canvasDimsRef.current;
+    if (cached.cssW !== cssW || cached.cssH !== cssH || cached.ratio !== ratio) {
+      canvas.width = Math.max(1, Math.floor(cssW * ratio));
+      canvas.height = Math.max(1, Math.floor(cssH * ratio));
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      canvasDimsRef.current = {cssW, cssH, ratio};
+    }
+
+    context.clearRect(0, 0, cssW, cssH);
 
     const {drawWidth, drawHeight, offsetX, offsetY} = getContainDrawRect(
       baseImage.naturalWidth,
       baseImage.naturalHeight,
-      width,
-      height,
-      subjectScale,
+      cssW,
+      cssH,
+      subjectScaleRef.current,
     );
+
     const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
-    if (cacheDimensionsRef.current !== cacheKey) {
+    if (cacheDimsRef.current !== cacheKey) {
       keyedFrameCacheRef.current.clear();
-      cacheDimensionsRef.current = cacheKey;
+      cacheDimsRef.current = cacheKey;
     }
 
     const getKeyedFrame = (index: number) => {
-      const cached = keyedFrameCacheRef.current.get(index);
-      if (cached) {
-        return cached;
+      const cache = keyedFrameCacheRef.current;
+      const hit = cache.get(index);
+      if (hit) {
+        // Move to end so eviction always removes least-recently-used
+        cache.delete(index);
+        cache.set(index, hit);
+        return hit;
       }
 
-      const sourceImage = images[index];
-      if (!sourceImage || sourceImage.naturalWidth === 0 || sourceImage.naturalHeight === 0) {
-        return null;
-      }
+      const sourceImage = imgs[index];
+      if (!sourceImage || sourceImage.naturalWidth === 0 || sourceImage.naturalHeight === 0) return null;
 
       const nextFrame = createKeyedFrameCanvas(sourceImage, drawWidth, drawHeight);
-      keyedFrameCacheRef.current.set(index, nextFrame);
+      cache.set(index, nextFrame);
 
-      if (keyedFrameCacheRef.current.size > 8) {
-        const oldestKey = keyedFrameCacheRef.current.keys().next().value;
-        if (oldestKey !== undefined) {
-          keyedFrameCacheRef.current.delete(oldestKey);
-        }
+      // 28 frames covers ~3s of smooth scroll buffer without re-keying
+      if (cache.size > 28) {
+        const lruKey = cache.keys().next().value;
+        if (lruKey !== undefined) cache.delete(lruKey);
       }
 
       return nextFrame;
     };
 
-    const keyedBaseFrame = getKeyedFrame(frameSample.baseIndex);
-    if (!keyedBaseFrame) {
-      return;
-    }
+    lastFrameIndexRef.current = frameSample.baseIndex;
 
+    const keyedBaseFrame = getKeyedFrame(frameSample.baseIndex);
+    if (!keyedBaseFrame) return;
+
+    const reducedMotion = prefersReducedMotionRef.current;
     const easedMix = frameSample.mix * frameSample.mix * (3 - 2 * frameSample.mix);
-    const blendAlpha = prefersReducedMotion ? 0 : easedMix * 0.34;
+    const blendAlpha = reducedMotion ? 0 : easedMix * 0.38;
     const keyedNextFrame =
       blendAlpha > 0.001 && frameSample.nextIndex !== frameSample.baseIndex
         ? getKeyedFrame(frameSample.nextIndex)
         : null;
 
-    // Outside-only blur halo that helps the rectangular frame melt into the page background.
+    // Outer bloom — softer blur, low opacity so subject melts into scene
     context.save();
-    context.filter = 'blur(24px) brightness(0.72) saturate(0.82)';
-    context.globalAlpha = 0.38;
-    context.drawImage(keyedBaseFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
+    context.filter = 'blur(16px) brightness(0.58) saturate(0.62)';
+    context.globalAlpha = 0.22;
+    context.drawImage(keyedBaseFrame, offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
     if (keyedNextFrame && blendAlpha > 0) {
       context.globalAlpha = blendAlpha * 0.9;
-      context.drawImage(keyedNextFrame, offsetX - 16, offsetY - 16, drawWidth + 32, drawHeight + 32);
+      context.drawImage(keyedNextFrame, offsetX - 14, offsetY - 14, drawWidth + 28, drawHeight + 28);
     }
-
-    // Cut the center back out so the blur only remains outside the image boundary.
+    // Cut center out so bloom only exists outside image boundary
     context.globalCompositeOperation = 'destination-out';
     context.fillStyle = '#000';
     context.fillRect(offsetX + 2, offsetY + 2, drawWidth - 4, drawHeight - 4);
@@ -211,12 +227,91 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     }
     paintWatermarkCleanup(context, offsetX, offsetY, drawWidth, drawHeight);
     context.restore();
-  }, [frameSample, images, prefersReducedMotion, subjectScale]);
+  }, []);
+
+  const startAnimating = useCallback(() => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+
+    const tick = () => {
+      const target = targetProgressRef.current;
+      const current = displayProgressRef.current;
+      const delta = target - current;
+
+      if (Math.abs(delta) < 0.0008) {
+        displayProgressRef.current = target;
+        draw();
+        // Settled — stop the loop
+        isAnimatingRef.current = false;
+        return;
+      }
+
+      displayProgressRef.current = current + delta * 0.14;
+      draw();
+      rafIdRef.current = window.requestAnimationFrame(tick);
+    };
+
+    rafIdRef.current = window.requestAnimationFrame(tick);
+  }, [draw]);
+
+  // When progress prop changes, update target and kick off animation if not running
+  useEffect(() => {
+    targetProgressRef.current = progress;
+
+    if (prefersReducedMotion) {
+      // Snap immediately, no lerp
+      displayProgressRef.current = progress;
+      draw();
+      return;
+    }
+
+    startAnimating();
+  }, [progress, prefersReducedMotion, draw, startAnimating]);
+
+  // Redraw when images array changes (progressive loading batches arrive)
+  useEffect(() => {
+    if (images.length === 0) return;
+    // Remap displayProgress so the same visual frame stays on screen when
+    // the array grows from 24 → 300. Without this, progress=0.5 would jump
+    // from frame 11 (of 24) to frame 149 (of 300).
+    const newTotal = images.length;
+    if (newTotal > 1) {
+      displayProgressRef.current = lastFrameIndexRef.current / (newTotal - 1);
+    }
+    draw();
+  }, [images, draw]);
+
+  // Redraw on subjectScale change
+  useEffect(() => {
+    draw();
+  }, [subjectScale, draw]);
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      window.cancelAnimationFrame(rafIdRef.current);
+    };
+  }, []);
+
+  // Handle canvas resize (window resize)
+  useEffect(() => {
+    const onResize = () => {
+      // Invalidate dimension cache so next draw reallocates
+      canvasDimsRef.current = {cssW: 0, cssH: 0, ratio: 0};
+      // Also clear keyed frame cache since draw dimensions change
+      keyedFrameCacheRef.current.clear();
+      cacheDimsRef.current = '';
+      draw();
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [draw]);
 
   return (
-    <div className={`sequence-canvas-shell ${ready ? 'is-ready' : ''}`}>
+    <div className={`sequence-canvas-shell ${ready ? 'is-ready' : ''} ${entering ? 'is-entering' : ''}`}>
       <canvas className="sequence-canvas" ref={canvasRef} aria-label="Animated personage sequence" />
-      {!ready ? <p className="sequence-loading">Preparing the sequence…</p> : null}
+      {!ready ? <p className="sequence-loading">—</p> : null}
     </div>
   );
 }

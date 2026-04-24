@@ -7,7 +7,7 @@ export function keyConnectedNearBlackPixels(
   width: number,
   height: number,
   hardThreshold = 14,
-  softThreshold = 26,
+  softThreshold = 28,
 ) {
   const visited = new Uint8Array(width * height);
   const queue: number[] = [];

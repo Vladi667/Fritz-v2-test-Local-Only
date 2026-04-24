@@ -7,6 +7,8 @@ export const categories: CategoryBeat[] = [
     navLabel: 'Website Creation',
     eyebrow: 'Website Creation',
     italicLine: 'A website should not just present a business. It should elevate it.',
+    ghostWord: 'PRESENCE',
+    verse: ['Presence', 'is not', 'a feature.', 'It is', 'the offer.'],
     description:
       'Digital presence designed to sharpen perception, build trust, and make the brand feel immediately more established.',
     cta: 'Discover Website Creation',
@@ -21,6 +23,8 @@ export const categories: CategoryBeat[] = [
     navLabel: 'Brand Design',
     eyebrow: 'Brand Design',
     italicLine: 'Before buying the offer, they buy the feeling.',
+    ghostWord: 'IDENTITY',
+    verse: ['Before the words.', 'Before the price.', 'There is', 'how it feels', 'to look at.'],
     description:
       'Identity, direction, and creative built to make a brand feel more coherent, more memorable, and more valuable.',
     cta: 'Discover Brand Design',
@@ -35,6 +39,8 @@ export const categories: CategoryBeat[] = [
     navLabel: 'Business Scaling',
     eyebrow: 'Business Scaling',
     italicLine: 'Growth becomes powerful when structure replaces improvisation.',
+    ghostWord: 'STRUCTURE',
+    verse: ['Scale without', 'structure', 'is faster', 'chaos.'],
     description:
       'Acquisition, automation, AI, and operational systems aligned to help businesses scale with more clarity and control.',
     cta: 'Discover Business Scaling',
@@ -49,6 +55,8 @@ export const categories: CategoryBeat[] = [
     navLabel: 'TBA',
     eyebrow: 'TBA',
     italicLine: 'TBA',
+    ghostWord: 'BECOMING',
+    verse: ['Something', 'is forming.', 'Not yet', 'named.'],
     description: 'TBA',
     cta: 'TBA',
     start: 0.72,
