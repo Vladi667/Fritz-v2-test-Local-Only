@@ -73,7 +73,7 @@ const joinScene: Scene = {
     'FRITZ brings together UX/UI, cinematic direction, Superpower, and Remotion to shape digital experiences that feel less like marketing and more like gravity.',
   cta: 'Join the Adventure',
   href: '#website-creation',
-  align: 'start',
+  align: 'end',
   kind: 'chapter',
 };
 
