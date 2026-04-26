@@ -6,6 +6,7 @@ import {useReducedMotion} from '../hooks/useReducedMotion';
 type SequenceCanvasProps = {
   images: HTMLImageElement[];
   progress: number;
+  progressRef?: React.MutableRefObject<number>;
   ready: boolean;
   subjectScale?: number;
 };
@@ -64,7 +65,7 @@ function paintWatermarkCleanup(
   context.restore();
 }
 
-export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: SequenceCanvasProps) {
+export function SequenceCanvas({images, progress, progressRef, ready, subjectScale = 0.7}: SequenceCanvasProps) {
   const prefersReducedMotion = useReducedMotion();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // Cached context — getContext is cheap but caching is cleaner
@@ -158,7 +159,9 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     const drawWidth = Math.round(rect.drawWidth);
     const drawHeight = Math.round(rect.drawHeight);
     const offsetX = Math.round(rect.offsetX);
-    const offsetY = Math.round(rect.offsetY);
+    // Bottom-anchor the subject so feet are never clipped
+    const bottomPad = Math.round(cssH * 0.015);
+    const offsetY = Math.round(cssH - drawHeight - bottomPad);
 
     const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
     if (cacheDimsRef.current !== cacheKey) {
@@ -235,12 +238,26 @@ export function SequenceCanvas({images, progress, ready, subjectScale = 0.7}: Se
     context.restore();
   }, []);
 
-  // Scroll drives frames directly — no lerp, no trailing motion
+  // Direct scroll → frame path: read from progressRef in the same RAF the scroll
+  // hook already scheduled, so there is only ever ONE frame of latency.
   useEffect(() => {
-    displayProgressRef.current = progress;
-    cancelAnimationFrame(rafIdRef.current);
-    rafIdRef.current = requestAnimationFrame(draw);
-  }, [progress, draw]);
+    if (!progressRef) {
+      // Fallback when no ref is provided — still only one RAF
+      displayProgressRef.current = progress;
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = requestAnimationFrame(draw);
+      return;
+    }
+
+    const onScroll = () => {
+      displayProgressRef.current = progressRef.current;
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = requestAnimationFrame(draw);
+    };
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [progress, progressRef, draw]);
 
   // Redraw when images array changes (progressive loading batches arrive)
   useEffect(() => {

@@ -84,7 +84,7 @@ const joinScene: Scene = {
 export function CinematicStage() {
   const storyRef = useRef<HTMLDivElement>(null);
   const sceneRefs = useRef<Record<string, HTMLElement | null>>({});
-  const progress = useScrollProgress(storyRef);
+  const {progress, progressRef} = useScrollProgress(storyRef);
   const prefersReducedMotion = useReducedMotion();
   const normalizedProgress = prefersReducedMotion ? quantizeProgress(progress) : progress;
   const {images, isReady} = useImageSequence();
@@ -268,8 +268,9 @@ export function CinematicStage() {
           <SequenceCanvas
             images={images}
             progress={normalizedProgress}
+            progressRef={progressRef}
             ready={isReady}
-            subjectScale={0.76}
+            subjectScale={0.62}
           />
         </div>
 

@@ -17,7 +17,7 @@ vi.mock('../hooks/useImageSequence', () => ({
 }));
 
 vi.mock('../hooks/useScrollProgress', () => ({
-  useScrollProgress: vi.fn(() => 0),
+  useScrollProgress: vi.fn(() => ({progress: 0, progressRef: {current: 0}})),
 }));
 
 vi.mock('../hooks/useReducedMotion', () => ({
@@ -31,7 +31,7 @@ vi.mock('./SequenceCanvas', () => ({
 describe('CinematicStage', () => {
   afterEach(async () => {
     const {useScrollProgress} = await import('../hooks/useScrollProgress');
-    vi.mocked(useScrollProgress).mockReturnValue(0);
+    vi.mocked(useScrollProgress).mockReturnValue({progress: 0, progressRef: {current: 0}});
   });
 
   it('opens with the FRITZ hero as the first landing scene', () => {
