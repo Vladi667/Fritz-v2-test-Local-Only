@@ -159,9 +159,8 @@ export function SequenceCanvas({images, progress, progressRef, ready, subjectSca
     const drawWidth = Math.round(rect.drawWidth);
     const drawHeight = Math.round(rect.drawHeight);
     const offsetX = Math.round(rect.offsetX);
-    // Bottom-anchor the subject so feet are never clipped
-    const bottomPad = Math.round(cssH * 0.015);
-    const offsetY = Math.round(cssH - drawHeight - bottomPad);
+    // Center vertically — character is the main stage presence
+    const offsetY = Math.round((cssH - drawHeight) / 2);
 
     const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
     if (cacheDimsRef.current !== cacheKey) {
