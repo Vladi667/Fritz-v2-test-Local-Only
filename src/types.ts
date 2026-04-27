@@ -10,8 +10,12 @@ export type CategoryBeat = {
   verse?: string[];
   description: string;
   cta: string;
+  href?: string;
   start: number;
   end: number;
   accent: AccentMode;
   align: 'start' | 'end';
+  /** Optional overrides for the dedicated category page */
+  pageTitle?: string;
+  pageDescription?: string;
 };
