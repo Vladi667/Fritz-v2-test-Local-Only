@@ -117,7 +117,7 @@ export function CinematicStage() {
         verse: category.verse,
         description: category.description,
         cta: category.cta,
-        href: `#${category.id}`,
+        href: `/${category.id}`,
         align: category.align,
         kind: 'chapter' as const,
       })),
