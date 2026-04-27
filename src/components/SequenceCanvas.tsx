@@ -11,7 +11,15 @@ type SequenceCanvasProps = {
   subjectScale?: number;
 };
 
-function createKeyedFrameCanvas(image: HTMLImageElement, width: number, height: number) {
+function createKeyedFrameCanvas(
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+  sx = 0,
+  sy = 0,
+  sw?: number,
+  sh?: number,
+) {
   const keyedCanvas = document.createElement('canvas');
   keyedCanvas.width = Math.max(1, Math.round(width));
   keyedCanvas.height = Math.max(1, Math.round(height));
@@ -21,7 +29,9 @@ function createKeyedFrameCanvas(image: HTMLImageElement, width: number, height: 
     return keyedCanvas;
   }
 
-  keyedContext.drawImage(image, 0, 0, keyedCanvas.width, keyedCanvas.height);
+  const srcW = sw ?? image.naturalWidth;
+  const srcH = sh ?? image.naturalHeight;
+  keyedContext.drawImage(image, sx, sy, srcW, srcH, 0, 0, keyedCanvas.width, keyedCanvas.height);
   const imageData = keyedContext.getImageData(0, 0, keyedCanvas.width, keyedCanvas.height);
   keyConnectedNearBlackPixels(imageData.data, keyedCanvas.width, keyedCanvas.height);
   keyedContext.putImageData(imageData, 0, 0);
@@ -148,9 +158,26 @@ export function SequenceCanvas({images, progress, progressRef, ready, subjectSca
 
     context.clearRect(0, 0, cssW, cssH);
 
+    // Portrait-crop: when source frames are landscape but the viewport is portrait
+    // (mobile), contain-fitting the full frame shrinks the character to a tiny sliver.
+    // Instead, crop a portrait column centred on the subject before scaling.
+    const srcNatW = baseImage.naturalWidth;
+    const srcNatH = baseImage.naturalHeight;
+    const srcRatio = srcNatW / srcNatH;
+    const tgtRatio = cssW / cssH;
+
+    let cropSx = 0, cropSy = 0, cropSw = srcNatW, cropSh = srcNatH;
+    if (srcRatio > 1 && tgtRatio < 1) {
+      // Landscape source in portrait viewport — crop a portrait column around subject.
+      // Subject sits at ~56 % of the frame width based on the animation framing.
+      cropSw = Math.round(srcNatH * tgtRatio);
+      const focusX = Math.round(srcNatW * 0.56);
+      cropSx = Math.max(0, Math.min(srcNatW - cropSw, focusX - Math.round(cropSw / 2)));
+    }
+
     const rect = getContainDrawRect(
-      baseImage.naturalWidth,
-      baseImage.naturalHeight,
+      cropSw,
+      cropSh,
       cssW,
       cssH,
       subjectScaleRef.current,
@@ -162,7 +189,7 @@ export function SequenceCanvas({images, progress, progressRef, ready, subjectSca
     // Center vertically — character is the main stage presence
     const offsetY = Math.round((cssH - drawHeight) / 2);
 
-    const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}`;
+    const cacheKey = `${Math.round(drawWidth)}x${Math.round(drawHeight)}_${cropSx}`;
     if (cacheDimsRef.current !== cacheKey) {
       keyedFrameCacheRef.current.clear();
       cacheDimsRef.current = cacheKey;
@@ -181,7 +208,7 @@ export function SequenceCanvas({images, progress, progressRef, ready, subjectSca
       const sourceImage = imgs[index];
       if (!sourceImage || sourceImage.naturalWidth === 0 || sourceImage.naturalHeight === 0) return null;
 
-      const nextFrame = createKeyedFrameCanvas(sourceImage, drawWidth, drawHeight);
+      const nextFrame = createKeyedFrameCanvas(sourceImage, drawWidth, drawHeight, cropSx, cropSy, cropSw, cropSh);
       cache.set(index, nextFrame);
 
       // 28 frames covers ~3s of smooth scroll buffer without re-keying

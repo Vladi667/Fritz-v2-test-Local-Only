@@ -1293,22 +1293,35 @@ button {
     border-top: 0;
   }
 
+  /* Hide nav links on mobile — too many items for a single row */
   .site-nav {
-    justify-content: flex-end;
-    overflow-x: auto;
-    padding-top: 0;
-    padding-bottom: 0.1rem;
+    display: none;
   }
 
   .story-stage__vignette {
+    /* Mobile: stronger top darkening (header area + hero text), left-side fade for
+       text legibility, and a deep bottom pool so chapter copy sits on dark ground. */
     background:
-      radial-gradient(circle at 50% 52%, rgba(7, 5, 4, 0) 0%, rgba(7, 5, 4, 0.04) 24%, rgba(7, 5, 4, 0.24) 52%, rgba(7, 5, 4, 0.58) 76%, rgba(7, 5, 4, 0.84) 100%),
-      linear-gradient(180deg, rgba(4, 3, 3, 0.88) 0%, rgba(4, 3, 3, 0.28) 24%, rgba(4, 3, 3, 0.28) 72%, rgba(4, 3, 3, 0.9) 100%);
+      linear-gradient(to right, rgba(4, 3, 3, 0.72) 0%, rgba(4, 3, 3, 0) 52%),
+      linear-gradient(180deg,
+        rgba(4, 3, 3, 0.93) 0%,
+        rgba(4, 3, 3, 0.55) 16%,
+        rgba(4, 3, 3, 0.10) 42%,
+        rgba(4, 3, 3, 0.10) 55%,
+        rgba(4, 3, 3, 0.65) 76%,
+        rgba(4, 3, 3, 0.95) 100%
+      );
   }
 
+  /* Hero: text anchored to top-start so it floats over the upper dark area */
   .scene {
     padding-top: calc(var(--header-height) + 1rem);
-    padding-bottom: 4rem;
+    padding-bottom: 2rem;
+    align-items: start;
+  }
+
+  /* Chapter scenes: text anchored to bottom so character fills the top */
+  .scene--chapter {
     align-items: end;
   }
 
@@ -1346,12 +1359,13 @@ button {
     text-align: left;
   }
 
-  .scene-quote {
-    margin-bottom: 1rem;
+  /* Verse hidden on mobile — single-column layout has no room for it */
+  .scene-verse {
+    display: none;
   }
 
-  .scene-verse {
-    margin-bottom: 1.2rem;
+  .scene-quote {
+    margin-bottom: 1rem;
   }
 
   .scene-prelude--landing {
@@ -1376,12 +1390,44 @@ button {
   }
 
   .scene-copy {
-    margin-bottom: 0.8rem;
     padding: 0 0 0.2rem;
   }
 
-  .scene--hero {
-    align-items: start;
+  /* Compact internal spacing so chapter copy doesn't overflow the viewport */
+  .scene-numeral {
+    margin-bottom: 0.9rem;
+  }
+
+  .scene-eyebrow {
+    margin: 0 0 0.75rem;
+  }
+
+  .scene-italic-line {
+    margin-top: 0.65rem;
+    font-size: clamp(0.88rem, 3.8vw, 1rem);
+  }
+
+  .scene-body {
+    margin-top: 1rem;
+    font-size: 0.96rem;
+    line-height: 1.7;
+  }
+
+  .scene-actions {
+    margin-top: 1.4rem;
+    flex-direction: column;
+    gap: 0.65rem;
+    align-items: stretch;
+  }
+
+  .button-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Ghost word — proportionate on small screens */
+  .stage-ghost-word span {
+    font-size: clamp(3.5rem, 22vw, 5rem);
   }
 
   .scene--hero .scene-copy {
@@ -1395,7 +1441,7 @@ button {
 
   .scene--landing.scene--hero .scene-title--hero {
     max-width: 6.2ch;
-    font-size: clamp(2.2rem, 11vw, 3.65rem);
+    font-size: clamp(1.85rem, 9vw, 2.4rem);
   }
 
   .scene--landing.scene--hero .scene-body {
@@ -1408,16 +1454,8 @@ button {
     margin-top: 1.2rem;
   }
 
-  .scene--chapter {
-    align-items: end;
-  }
-
   .scene-title--hero {
-    font-size: clamp(2.55rem, 12.8vw, 4rem);
-  }
-
-  .scene-prelude p {
-    font-size: clamp(1rem, 4.7vw, 1.18rem);
+    font-size: clamp(2.2rem, 11vw, 3rem);
   }
 
   .scene-title--chapter {
@@ -1428,9 +1466,12 @@ button {
     font-size: clamp(1.08rem, 5.2vw, 1.34rem);
   }
 
-  .scene-body {
-    font-size: 0.96rem;
-    line-height: 1.7;
+  /* Footer stacks vertically on small screens */
+  .site-footer__inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    text-align: center;
   }
 
   .button-link {

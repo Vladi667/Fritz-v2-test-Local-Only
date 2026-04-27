@@ -89,6 +89,17 @@ export function CinematicStage() {
   const normalizedProgress = prefersReducedMotion ? quantizeProgress(progress) : progress;
   const {images, isReady} = useImageSequence();
 
+  // Responsive subject scale — larger on mobile to fill the portrait viewport
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 860);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 860px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  const subjectScale = isMobile ? 0.82 : 0.62;
+
   // Chapter sweep — thin accent line that crosses screen on chapter change
   const [sweeping, setSweeping] = useState(false);
   const prevActiveRef = useRef('');
@@ -270,7 +281,7 @@ export function CinematicStage() {
             progress={normalizedProgress}
             progressRef={progressRef}
             ready={isReady}
-            subjectScale={0.62}
+            subjectScale={subjectScale}
           />
         </div>
 
